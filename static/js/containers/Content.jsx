@@ -19,7 +19,6 @@ class Content extends Component {
             <Layer />
             <Layer />
           </Graph>
-          <ImageForm />
         </div>
       </div>
     );
