@@ -19,7 +19,7 @@ class Layer extends Component {
 
   handleClick(){
     if(!this.state.showActivations){
-      activations().then((res) => {
+      activations(this.props.layerName).then((res) => {
         this.setState({
           showActivations: true,
           filepaths: res.filepaths,
@@ -35,8 +35,8 @@ class Layer extends Component {
   render(){
     return (
       <div className="layer" onClick={this.handleClick}>
+        <p style={{margin:0}}>{this.props.layerName}</p>
         <Activations showActivations={this.state.showActivations} filepaths={this.state.filepaths}/>
-        <p style={{margin:0}}>placeholder</p>
       </div>
     );
   }

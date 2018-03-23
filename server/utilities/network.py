@@ -1,7 +1,7 @@
 import tensorflow as tf
 import numpy as np
 import cv2
-
+import uuid
 
 def load_model(model_path):
     with tf.gfile.FastGFile(model_path, 'rb') as f:
@@ -39,7 +39,7 @@ init()
 output_layer = sess.graph.get_tensor_by_name('output2:0')
 
 def get_layer_activations(layer_name):
-    img = cv2.imread('./static/images/dino.jpg',1)
+    img = cv2.imread('./static/images/penguin.jpg',1)
     #Get the tensor by name
     tensor = sess.graph.get_tensor_by_name(layer_name + ':0')
     #Run the tensor with the image as input
@@ -57,16 +57,15 @@ def get_layer_activations(layer_name):
         sorted_filters.append((fi.sum(),i,fi))
     sorted_filters = sorted(sorted_filters, reverse=True, key=lambda tup: tup[0])
     filepaths = []
-    for i in range(10):
+    for i in range(20):
 
         filter_tuple = sorted_filters[i]
+        print(filter_tuple[0])
         activation = 255*filter_tuple[2]/filter_tuple[2].max()
-        filepath = 'static/images/temp/img_'+ str(i) + '.jpg'
+        filepath = 'static/images/temp/'+ str(uuid.uuid4()) + '.jpg'
         cv2.imwrite(filepath, activation)
         filepaths.append(filepath)
     return filepaths
-        #cv2.imshow("image", activation)
-
         #newImg = PIL.Image.open(img_path)
         #mask = PIL.Image.fromarray(filter_tuple[2]/filter_tuple[2].max())
         #mask = np.float32(mask.resize((img.shape[1], img.shape[0])))

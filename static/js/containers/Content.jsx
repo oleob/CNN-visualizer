@@ -17,17 +17,14 @@ class Content extends Component {
         <div className="contentCenter">
           <ImageForm />
           <Graph spacing={40} size={150}>
-            <Layer />
-            <Layer />
-            <Layer />
-            <Layer />
-            <Layer />
-            <Layer />
-            <Layer />
-            <Layer />
-            <Layer />
-            <Layer />
-            <Layer />
+            <Layer layerName="mixed3a"/>
+            <Layer layerName="mixed3b"/>
+            <Layer layerName="mixed4a"/>
+            <Layer layerName="mixed4b"/>
+            <Layer layerName="mixed4c"/>
+            <Layer layerName="mixed4d"/>
+            <Layer layerName="mixed4e"/>
+            <Layer layerName="mixed5a"/>
           </Graph>
         </div>
       </div>

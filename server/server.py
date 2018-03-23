@@ -11,10 +11,12 @@ app = Flask(__name__, static_folder='./static', template_folder='./static')
 def index():
     return render_template('index.html')
 
-@app.route('/activations', methods=['GET'])
+@app.route('/activations', methods=['Post'])
 def test():
-    filepaths = net.get_layer_activations('mixed4e_5x5')
+    layer_name = json.loads(request.data)['layer_name']
+    filepaths = net.get_layer_activations(layer_name)
     return json.dumps({'filepaths': filepaths})
+
 @app.route("/predict", methods=["POST"])
 def predict():
     image = request.files['image']

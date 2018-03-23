@@ -10,7 +10,7 @@ const predict = (data) => {
 
 const activations = (layerName) => {
   return new Promise((resolve, reject) => {
-    axios.post('activations', {layerName}).then((res) => {
+    axios.post('activations', {layer_name: layerName}).then((res) => {
       resolve(res.data);
     })
   })
