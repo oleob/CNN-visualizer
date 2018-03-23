@@ -39,7 +39,7 @@ init()
 output_layer = sess.graph.get_tensor_by_name('output2:0')
 
 def get_layer_activations(layer_name):
-    img = cv2.imread('./static/images/penguin.jpg',1)
+    img = cv2.imread('./static/images/penguins3.jpg',1)
     #Get the tensor by name
     tensor = sess.graph.get_tensor_by_name(layer_name + ':0')
     #Run the tensor with the image as input
@@ -58,26 +58,18 @@ def get_layer_activations(layer_name):
     sorted_filters = sorted(sorted_filters, reverse=True, key=lambda tup: tup[0])
     filepaths = []
     for i in range(20):
-
         filter_tuple = sorted_filters[i]
         print(filter_tuple[0])
-        activation = 255*filter_tuple[2]/filter_tuple[2].max()
+        activation = filter_tuple[2]/filter_tuple[2].max()
+        height, width, channels = img.shape
+        activation = cv2.resize(activation,(width, height), interpolation=0)
+        r,g,b = cv2.split(img)
+        r = r*activation
+        g = g*activation
+        b = b*activation
+        newImg = cv2.merge((r,g,b))
+
         filepath = 'static/images/temp/'+ str(uuid.uuid4()) + '.jpg'
-        cv2.imwrite(filepath, activation)
+        cv2.imwrite(filepath, newImg)
         filepaths.append(filepath)
     return filepaths
-        #newImg = PIL.Image.open(img_path)
-        #mask = PIL.Image.fromarray(filter_tuple[2]/filter_tuple[2].max())
-        #mask = np.float32(mask.resize((img.shape[1], img.shape[0])))
-        #r,g,b = newImg.split()
-
-        #r = PIL.Image.fromarray(np.uint8(r*mask))
-        #g = PIL.Image.fromarray(np.uint8(g*mask))
-        #b = PIL.Image.fromarray(np.uint8(b*mask))
-
-
-        #newImg = PIL.Image.merge('RGB', (r,g,b))
-        #newImg.show()
-        #newImg.save('results/' + str(i) + '-filter_' + str(filter_tuple[1]) + '-score_' + str(filter_tuple[0]) + '.jpg')
-        # mask = PIL.Image.fromarray(mask*255)
-        # mask.show()
