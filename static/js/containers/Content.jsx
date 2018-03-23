@@ -15,7 +15,17 @@ class Content extends Component {
     return(
       <div className="content">
         <div className="contentCenter">
+          <ImageForm />
           <Graph spacing={40} size={150}>
+            <Layer />
+            <Layer />
+            <Layer />
+            <Layer />
+            <Layer />
+            <Layer />
+            <Layer />
+            <Layer />
+            <Layer />
             <Layer />
             <Layer />
           </Graph>
