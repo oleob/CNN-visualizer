@@ -39,4 +39,6 @@ html,body{
   grid-row: 2/3;
   margin-top: 10px;
   margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
 }
