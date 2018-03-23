@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import '../css/grid.css';
-
+import '../css/components.css';
 
 import Header from './containers/Header';
 import Content from './containers/Content';
