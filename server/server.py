@@ -1,9 +1,12 @@
 from flask import Flask, render_template, request, make_response, Response
 import utilities.network as net
+from utilities.cleaner import clear_temp_folder
 import cv2
 import numpy as np
 import json
 import io
+
+clear_temp_folder()
 
 app = Flask(__name__, static_folder='./static', template_folder='./static')
 
