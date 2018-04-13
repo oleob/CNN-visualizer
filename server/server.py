@@ -14,8 +14,8 @@ app = Flask(__name__, static_folder='./static', template_folder='./static')
 def index():
     return render_template('index.html')
 
-@app.route('/activations', methods=['Post'])
-def test():
+@app.route('/activations', methods=['POST'])
+def activations():
     layer_name = json.loads(request.data)['layer_name']
     filepaths = net.get_layer_activations(layer_name)
     return json.dumps({'filepaths': filepaths})
@@ -29,6 +29,11 @@ def predict():
     img = cv2.imdecode(data, 1)
     prediction = net.predict(img)
     return json.dumps(prediction)
+
+@app.route('/toast', methods=['GET'])
+def toast():
+    net.get_gradients('mixed3b')
+    return 'hello'
 
 if __name__ == '__main__':
     app.run()
