@@ -13,6 +13,7 @@ class Taylor:
         self.img = cv2.resize(img, (224,224))
         self.output_layer = sess.graph.get_tensor_by_name('output2:0')
         self.new_output = tf.placeholder(tf.float32, self.output_layer.shape)
+        self.labels = labels = open('./models/inception_labels.txt').read().split('\n')
 
     def __call__(self):
         #get values of output_layer
@@ -97,9 +98,11 @@ class Taylor:
         return [c * activation]
 
     def backprop_max_pool(self, activation, relevance, ksize=[1, 3, 3, 1], strides=[1, 2, 2, 1]):
-        z = nn_ops.avg_pool(activation, ksize, strides, padding='SAME') + self.epsilon
+        z = tf.nn.max_pool(activation, ksize, strides, padding='SAME') + self.epsilon
+        #z = nn_ops.avg_pool(activation, ksize, strides, padding='SAME') + self.epsilon
         s = relevance / z
-        c = gen_nn_ops._avg_pool_grad(tf.shape(activation), s, ksize, strides, padding='SAME')
+        #c = gen_nn_ops._avg_pool_grad(tf.shape(activation), s, ksize, strides, padding='SAME')
+        c = gen_nn_ops.max_pool_grad_v2(activation, z, s, ksize, strides, padding='SAME')
         return activation * c
 
     def backprop_inception_max_pool(self, activation, name, relevance, ksize=[1, 3, 3, 1], strides=[1, 1, 1, 1]):
@@ -177,7 +180,14 @@ class Taylor:
 
         output_values = np.zeros(int(self.output_layer.shape[1]))
         units = self.sess.run(self.output_layer, feed_dict={"input:0":[self.img]})[0]
-        output_values[np.argmax(units)] = 1
+        sorted_labels = []
+        for i in range(len(self.labels)):
+            sorted_labels.append((units[i], self.labels[i], i))
+        #sort tuples on highest Probability
+        sorted_labels = sorted(sorted_labels,reverse=True,key=lambda tup: tup[0])
+        for i in range(20):
+            print(sorted_labels[i])
+        output_values[sorted_labels[0][2]] = 1
 
         result = self.sess.run(relevance, feed_dict={"input:0":[self.img], self.new_output: [output_values]})
         for r in range(len(result)):
@@ -196,7 +206,7 @@ class Taylor:
 
                 fig.savefig('static/images/temp/{0}.jpg'.format(r))
             else:
-                print('-', relevance[r].op.name, res)
+                print('-', relevance[r].op.name, res[0])
             # acti = cv2.resize(acti, (224,224), interpolation=0)
             # r,g,b = cv2.split(self.img)
             # r = r*acti
@@ -205,8 +215,15 @@ class Taylor:
             # newImg = cv2.merge((r,g,b))
             # cv2.imwrite('static/images/temp/' + str(su) + '.jpg', newImg)
 
+    def print_layers(self):
+        layer = self.output_layer
+        while not (layer.op.name == 'input'):
+            print(layer.op.name)
+            layer = self.get_parent(layer, 1)
+
 def test(sess):
     taylor = Taylor(sess)
+    taylor.print_layers()
     relevance = taylor()
     taylor.run(relevance)
 
