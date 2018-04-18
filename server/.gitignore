@@ -3,3 +3,8 @@ __pycache__
 models
 images
 js
+checkpoints
+datasets
+nets
+preprocessing
+slim_files
