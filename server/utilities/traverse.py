@@ -1,6 +1,6 @@
 import tensorflow as tf
 
-def traverse_graph(self, layer, relevances):
+def inception_v1(self, layer, relevances):
     while not ('ExpandDims' in layer.name):
         print(layer.name)
         with tf.variable_scope(layer.op.name + '_taylor'):
@@ -49,3 +49,6 @@ def traverse_graph(self, layer, relevances):
                 break
 
     return relevances
+
+def vgg_16 (self, layer, relevances):
+    return 'wooo'
