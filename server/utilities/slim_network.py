@@ -14,12 +14,14 @@ from tensorflow.contrib import slim
 
 from utilities.slim_taylor import Taylor
 import utilities.traverse as traverse
-
+from utilities.preprocess import pad_image
 
 class Network:
     def __init__(self, network_name):
-        img = tf.read_file('./static/images/shark.jpg')
-        image = tf.image.decode_jpeg(img, channels=3)
+        path = pad_image('./static/images/penguins3.jpg')
+        image = tf.read_file(path)
+        image = tf.image.decode_jpeg(image, channels=3)
+        #image = tf.image.resize_images(image, (224, 224))
         if network_name == 'InceptionV1':
             shift_index = False
             traverse_graph = traverse.inception_v1
