@@ -24,9 +24,9 @@ class Taylor:
             parent = [inp for inp in parent.op.inputs if not (inp.op.type=='Const')][0]
         return parent
 
-    def backprop_conv(self, activation, weights, relevance, strides=[1, 1, 1, 1], padding='SAME'):
+    def backprop_conv(self, activation, weights, relevance, strides, padding):
         w_pos = tf.maximum(0., weights)
-        z = tf.nn.conv2d(activation, w_pos, strides, padding='SAME') + self.epsilon
+        z = tf.nn.conv2d(activation, w_pos, strides, padding) + self.epsilon
         s = relevance / z
         c = gen_nn_ops.conv2d_backprop_input(tf.shape(activation), w_pos, s, strides, padding)
         return activation * c
@@ -80,7 +80,7 @@ class Taylor:
         relevance_pool = self.backprop_conv(activation_1x1, weights_1x1, relevance_1x1)
         return self.backprop_avg_pool(activation_pool, relevance_pool, ksize = ksize, strides = strides, padding = padding)
 
-    def backprop_conv_input(self, activation, weights, relevance, strides, padding='SAME', lowest=0., highest=1.):
+    def backprop_conv_input(self, activation, weights, relevance, strides, padding, lowest=0., highest=1.):
         W_p = tf.maximum(0., weights)
         W_n = tf.minimum(0., weights)
 
