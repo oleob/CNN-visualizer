@@ -3,20 +3,20 @@ import cv2
 from tensorflow.python.ops import nn_ops, gen_nn_ops
 import numpy as np
 import matplotlib.pyplot as plt
-from utilities.net_funcs.inception_v1 import traverse_graph
 
 class Taylor:
-    def __init__(self, sess, epsilon=1e-10):
+    def __init__(self, sess, traverse_graph, epsilon=1e-10):
         self.sess = sess
         self.epsilon = epsilon
         self.graph = sess.graph
+        self.traverse_graph = traverse_graph
         self.output_layer = sess.graph.get_tensor_by_name('Softmax:0')
         self.new_output = tf.placeholder(tf.float32, self.output_layer.shape)
 
     def __call__(self):
         relevances = [self.output_layer]
         layer = self.output_layer.op.inputs[0]
-        return traverse_graph(self, layer, relevances)
+        return self.traverse_graph(self, layer, relevances)
 
     def get_parent(self, child, num_skips):
         parent = child

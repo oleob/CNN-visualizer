@@ -13,6 +13,7 @@ from preprocessing import inception_preprocessing
 from tensorflow.contrib import slim
 
 from utilities.slim_taylor import Taylor
+from utilities.net_funcs.inception_v1 import traverse_graph
 
 class Network:
     def __init__(self):
@@ -39,7 +40,6 @@ class Network:
         self.sess = sess
         self.output_layer = probabilities
         self.checkpoints_dir = 'checkpoints'
-        self.taylor = Taylor(sess)
 
     def predict(self):
 
@@ -65,6 +65,6 @@ class Network:
         return parent
 
     def deep_taylor(self):
-        taylor = Taylor(self.sess)
+        taylor = Taylor(self.sess, traverse_graph)
         relevances = taylor()
         taylor.run_relevances(relevances)
