@@ -45,8 +45,9 @@ class Network:
                 probabilities = tf.nn.softmax(logits)
 
                 init_fn = slim.assign_from_checkpoint_fn(os.path.join(checkpoints_dir, 'vgg_16.ckpt'), slim.get_model_variables('vgg_16'))
-
-        sess = tf.Session()
+        config = tf.ConfigProto(device_count = {'GPU': 0})
+        sess = tf.Session(config=config)
+        #sess = tf.Session()
         init_fn(sess)
         self.sess = sess
         self.output_layer = probabilities
