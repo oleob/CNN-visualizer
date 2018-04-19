@@ -18,7 +18,7 @@ import utilities.traverse as traverse
 
 class Network:
     def __init__(self, network_name):
-        img = tf.read_file('./static/images/penguins3.jpg')
+        img = tf.read_file('./static/images/shark.jpg')
         image = tf.image.decode_jpeg(img, channels=3)
         if network_name == 'InceptionV1':
             shift_index = False

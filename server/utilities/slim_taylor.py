@@ -42,7 +42,7 @@ class Taylor:
     def backprop_avg_pool(self, activation, relevance, ksize, strides, padding):
         z = tf.nn.avg_pool(activation, ksize, strides, padding) + self.epsilon
         s = relevance / z
-        c = gen_nn_ops._avg_pool_grad(tf.shape(activation), s, ksize, strides, padding=padding)
+        c = gen_nn_ops._avg_pool_grad(tf.shape(activation), s, ksize, strides, padding)
         return c * activation
 
     def backprop_inception(self, layer, activation, relevance):
@@ -59,16 +59,25 @@ class Taylor:
     def backprop_1x1(self, layer, activation, relevance):
         conv = self.get_parent(layer,2)
         weights = self.get_parent(conv.op.inputs[1], 1)
-        return self.backprop_conv(activation, weights, relevance, strides=conv.op.get_attr('strides'))
+        strides = conv.op.get_attr('strides')
+        padding = conv.op.get_attr('padding')
+        return self.backprop_conv(activation, weights, relevance, strides, padding)
 
     def backprop_nxn(self, layer, activation_1x1, relevance_nxn):
         activation_nxn = self.get_parent(layer, 3)
+
         conv_nxn = self.get_parent(layer, 2)
-        conv_1x1 = self.get_parent(conv_nxn, 3)
         weights_nxn = self.get_parent(conv_nxn.op.inputs[1], 1)
+        strides_nxn = conv_nxn.op.get_attr('strides')
+        padding_nxn = conv_nxn.op.get_attr('padding')
+
+        conv_1x1 = self.get_parent(conv_nxn, 3)
         weights_1x1 = self.get_parent(conv_1x1.op.inputs[1], 1)
-        relevance_1x1 = self.backprop_conv(activation_nxn, weights_nxn, relevance_nxn, strides=conv_nxn.op.get_attr('strides'))
-        return self.backprop_conv(activation_1x1, weights_1x1, relevance_1x1, strides=conv_1x1.op.get_attr('strides'))
+        strides_1x1 = conv_1x1.op.get_attr('strides')
+        padding_1x1 = conv_1x1.op.get_attr('padding')
+
+        relevance_1x1 = self.backprop_conv(activation_nxn, weights_nxn, relevance_nxn, strides_nxn, padding_nxn)
+        return self.backprop_conv(activation_1x1, weights_1x1, relevance_1x1, strides_1x1, padding_1x1)
 
     def backprop_inception_pool(self, layer, activation_pool, relevance_1x1):
         conv_1x1 = self.get_parent(layer, 2)
@@ -77,10 +86,14 @@ class Taylor:
         ksize = activation_1x1.op.get_attr('ksize')
         strides = activation_1x1.op.get_attr('strides')
         padding = activation_1x1.op.get_attr('padding')
-        relevance_pool = self.backprop_conv(activation_1x1, weights_1x1, relevance_1x1)
-        return self.backprop_avg_pool(activation_pool, relevance_pool, ksize = ksize, strides = strides, padding = padding)
+        strides_1x1 = conv_1x1.op.get_attr('strides')
+        padding_1x1 = conv_1x1.op.get_attr('padding')
+        relevance_pool = self.backprop_conv(activation_1x1, weights_1x1, relevance_1x1, strides_1x1, padding_1x1)
+        return self.backprop_max_pool(activation_pool, relevance_pool, ksize, strides, padding)
 
     def backprop_conv_input(self, activation, weights, relevance, strides, padding, lowest=0., highest=1.):
+        lowest = tf.reduce_min(activation)
+        highest = tf.reduce_max(activation)
         W_p = tf.maximum(0., weights)
         W_n = tf.minimum(0., weights)
 
@@ -117,4 +130,4 @@ class Taylor:
 
                 fig.savefig('static/images/temp/{0}_{1}.jpg'.format(r, np.sum(res)))
             else:
-                print('-', relevances[r].op.name, result[r][0])
+                print('-', relevances[r].op.name, result[r][0].shape)

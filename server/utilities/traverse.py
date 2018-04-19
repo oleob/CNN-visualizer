@@ -86,7 +86,7 @@ def vgg_16 (self, layer, relevances):
                 ksize = layer.op.get_attr('ksize')
                 strides = layer.op.get_attr('strides')
                 padding = layer.op.get_attr('padding')
-                relevances.append(self.backprop_max_pool(activation, relevances[-1], ksize, strides, padding))
+                relevances.append(self.backprop_avg_pool(activation, relevances[-1], ksize, strides, padding))
                 layer = activation
             else:
                 print('end', layer.name)
