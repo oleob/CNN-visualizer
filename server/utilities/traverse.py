@@ -12,7 +12,9 @@ def inception_v1(self, layer, relevances):
                 conv = self.get_parent(layer,1)
                 weights = self.get_parent(conv.op.inputs[1], 1)
                 activation = self.get_parent(layer, 3)
-                relevances.append(self.backprop_conv(activation, weights, relevances[-1], strides=conv.op.get_attr('strides')))
+                strides = conv.op.get_attr('strides')
+                padding = conv.op.get_attr('padding')
+                relevances.append(self.backprop_conv(activation, weights, relevances[-1], strides, padding))
                 layer = activation
             elif 'Dropout' in layer.name:
                 layer = self.get_parent(layer, 1)
@@ -39,10 +41,12 @@ def inception_v1(self, layer, relevances):
                 activation = self.get_parent(layer, 3)
                 conv = self.get_parent(layer, 2)
                 weights = self.get_parent(conv.op.inputs[1], 1)
+                strides = conv.op.get_attr('strides')
+                padding = conv.op.get_attr('padding')
                 if not ('ExpandDims' in activation.name):
-                    relevances.append(self.backprop_conv(activation, weights, relevances[-1], strides=conv.op.get_attr('strides')))
+                    relevances.append(self.backprop_conv(activation, weights, relevances[-1], strides, padding))
                 else:
-                    relevances.append(self.backprop_conv_input(activation, weights, relevances[-1], strides=conv.op.get_attr('strides')))
+                    relevances.append(self.backprop_conv_input(activation, weights, relevances[-1], strides, padding))
                 layer = activation
             else:
                 print('end:', layer.name)
