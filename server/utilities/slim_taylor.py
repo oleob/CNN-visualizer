@@ -58,7 +58,7 @@ class Taylor:
 
     def backprop_1x1(self, layer, activation, relevance):
         conv = self.get_parent(layer,2)
-        weights = self.get_parent(conv.op.inputs[1], 1)
+        weights = conv.op.inputs[1]
         strides = conv.op.get_attr('strides')
         padding = conv.op.get_attr('padding')
         return self.backprop_conv(activation, weights, relevance, strides, padding)
@@ -67,12 +67,12 @@ class Taylor:
         activation_nxn = self.get_parent(layer, 3)
 
         conv_nxn = self.get_parent(layer, 2)
-        weights_nxn = self.get_parent(conv_nxn.op.inputs[1], 1)
+        weights_nxn = conv_nxn.op.inputs[1]
         strides_nxn = conv_nxn.op.get_attr('strides')
         padding_nxn = conv_nxn.op.get_attr('padding')
 
         conv_1x1 = self.get_parent(conv_nxn, 3)
-        weights_1x1 = self.get_parent(conv_1x1.op.inputs[1], 1)
+        weights_1x1 = conv_1x1.op.inputs[1]
         strides_1x1 = conv_1x1.op.get_attr('strides')
         padding_1x1 = conv_1x1.op.get_attr('padding')
 
@@ -82,7 +82,7 @@ class Taylor:
     def backprop_inception_pool(self, layer, activation_pool, relevance_1x1):
         conv_1x1 = self.get_parent(layer, 2)
         activation_1x1 = self.get_parent(layer, 3)
-        weights_1x1 = self.get_parent(conv_1x1.op.inputs[1], 1)
+        weights_1x1 = conv_1x1.op.inputs[1]
         ksize = activation_1x1.op.get_attr('ksize')
         strides = activation_1x1.op.get_attr('strides')
         padding = activation_1x1.op.get_attr('padding')
