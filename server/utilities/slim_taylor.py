@@ -45,6 +45,17 @@ class Taylor:
         c = gen_nn_ops._avg_pool_grad(tf.shape(activation), s, ksize, strides, padding)
         return c * activation
 
+    def backprop_batchnorm(self, activation, relevance, z, op):
+        scale = op.inputs[1]
+        epsilon = op.get_attr("epsilon")
+        data_format = op.get_attr("data_format")
+        is_training = op.get_attr("is_training")
+        #z = tf.nn.batch_normalization(activation, op.inputs[1], op.inputs[2], op.inputs[3], op.inputs[4], op.inputs[5]) + self.epsilon
+        s = relevance / (z + self.epsilon)
+        c = gen_nn_ops.fused_batch_norm_grad_v2(s, op.inputs[0], scale, op.outputs[3], op.outputs[4], epsilon=epsilon, data_format=data_format, is_training=False)[0]
+        return c * op.inputs[0]
+        #return relevance
+
     def backprop_inception(self, layer, activation, relevance):
         inputs = [inp for inp in layer.op.inputs if not (inp.op.type=='Const')]
         split_dim = tf.constant([int(inputs[0].shape[3]), int(inputs[1].shape[3]), int(inputs[2].shape[3]), int(inputs[3].shape[3])])
@@ -56,14 +67,25 @@ class Taylor:
         new_relevance = (r_1x1 + r_3x3 + r_5x5 + r_pool)
         return new_relevance
 
-    def backprop_1x1(self, layer, activation, relevance):
+    def backprop_1x1(self, layer, activation_conv, relevance_batchnorm):
+        batchnorm = self.get_parent(layer, 1)
         conv = self.get_parent(layer,2)
         weights = conv.op.inputs[1]
         strides = conv.op.get_attr('strides')
         padding = conv.op.get_attr('padding')
-        return self.backprop_conv(activation, weights, relevance, strides, padding)
+        activation_batchnorm = tf.nn.relu(conv)
+        relevance_conv = self.backprop_batchnorm(activation_batchnorm, relevance_batchnorm, layer, batchnorm.op)
+        return self.backprop_conv(activation_conv, weights, relevance_conv, strides, padding)
 
     def backprop_nxn(self, layer, activation_1x1, relevance_nxn):
+        activation_nxn = self.get_parent(layer, 3)
+
+        relevance_1x1 = self.backprop_1x1(layer, activation_nxn, relevance_nxn)
+        return self.backprop_1x1(activation_nxn, activation_1x1, relevance_1x1)
+
+    def backprop_nxn2(self, layer, activation_1x1, relevance_nxn):
+        for i in range(7):
+            print(self.get_parent(layer, i))
         activation_nxn = self.get_parent(layer, 3)
 
         conv_nxn = self.get_parent(layer, 2)
