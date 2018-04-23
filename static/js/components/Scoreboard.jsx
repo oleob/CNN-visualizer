@@ -1,24 +1,24 @@
 import React, { Component } from 'react';
-import { Table, TableBody, TableHeader, TableHeaderColumn, TableRow, TableRowColumn,} from 'material-ui/Table';
+import Table, { TableBody, TableCell, TableHead, TableRow } from 'material-ui/Table';
 import Paper from 'material-ui/Paper';
 
 class Scoreboard extends Component {
   render(){
     return(
       <Paper className="scoreboard">
-        <Table selectable={false}>
-          <TableHeader displaySelectAll={false} adjustForCheckbox={false}>
+        <Table>
+          <TableHead>
             <TableRow>
-              <TableHeaderColumn>Class</TableHeaderColumn>
-              <TableHeaderColumn>Confidence</TableHeaderColumn>
+              <TableCell>Class</TableCell>
+              <TableCell numeric>Confidence</TableCell>
             </TableRow>
-          </TableHeader>
-          <TableBody displayRowCheckbox={false}>
+          </TableHead>
+          <TableBody>
             {
               this.props.results.map((result, i) =>(
                 <TableRow key={i}>
-                  <TableRowColumn>{result.name}</TableRowColumn>
-                  <TableRowColumn>{result.value}</TableRowColumn>
+                  <TableCell>{result.name}</TableCell>
+                  <TableCell>{result.value}</TableCell>
                 </TableRow>
               ))
             }

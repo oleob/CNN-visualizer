@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import Button from 'material-ui/RaisedButton';
+import Button from 'material-ui/Button';
 
 import {predict} from '../utilities/apiCalls';
 import Scoreboard from './Scoreboard';
@@ -31,9 +31,12 @@ class ImageForm extends Component {
   render() {
     return (
       <div className = "imageForm">
-        <Button containerElement='label' label='Upload file'>
-          <input type="file" name="myFile" onChange={this.uploadFile}  style={{"display" : "none"}}/>
-        </Button>
+        <input accept="image/*" id="raised-button-file" onChange={this.uploadFile} type="file" style={{"display" : "none"}}/>
+        <label htmlFor="raised-button-file">
+          <Button variant="raised" component="span" >
+            Upload image
+          </Button>
+        </label>
         <Scoreboard results={this.state.results} />
       </div>
     )

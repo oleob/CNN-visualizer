@@ -3,7 +3,9 @@ import AppBar from 'material-ui/AppBar';
 
 const Header = () => (
   <div className="header">
-    <AppBar title="Supervisualizer 9001" />    
+    <AppBar>
+      Hei
+    </AppBar>
   </div>
 );
 

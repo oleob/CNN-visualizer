@@ -31,10 +31,11 @@
     ]
   },
   "dependencies": {
+    "@material-ui/icons": "^1.0.0-beta.43",
     "axios": "^0.18.0",
     "fs": "0.0.1-security",
     "konva": "^2.0.2",
-    "material-ui": "^0.20.0",
+    "material-ui": "^1.0.0-beta.43",
     "react-konva": "^1.7.1",
     "react-redux": "^5.0.7",
     "redux": "^3.7.2",
