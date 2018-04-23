@@ -54,13 +54,14 @@ class Network:
         self.traverse_graph = traverse_graph
         self.checkpoints_dir = 'checkpoints'
         self.shift_index = shift_index
+        self.imagenet_labels = imagenet.create_readable_names_for_imagenet_labels()
+
 
     def predict(self, img, num_items):
+        img = pad_image(img)
         probabilities = self.sess.run(self.output_layer, feed_dict={self.input_image:img})
         probabilities = probabilities[0, 0:]
         sorted_inds = [i[0] for i in sorted(enumerate(-probabilities), key=lambda x:x[1])]
-
-        names = imagenet.create_readable_names_for_imagenet_labels()
 
         shift = 0
         if self.shift_index:
@@ -70,10 +71,9 @@ class Network:
             index = sorted_inds[i]
 
             item = {}
-            item['name'] = names[index + shift]
+            item['name'] = self.imagenet_labels[index + shift]
             item['value'] = round(float(probabilities[index]), 4)
             results.append(item)
-            #print('Probability %0.2f%% => [%s]' % (probabilities[index] * 100, names[index + shift]))
         return results
 
     def print_layers(self):
