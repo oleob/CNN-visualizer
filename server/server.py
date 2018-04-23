@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, make_response, Response
-import utilities.network as net
+from utilities.slim_network import Network
 from utilities.cleaner import clear_temp_folder
 import cv2
 import numpy as np
@@ -9,6 +9,7 @@ import io
 clear_temp_folder()
 
 app = Flask(__name__, static_folder='./static', template_folder='./static')
+net = Network('InceptionV1')
 
 @app.route('/')
 def index():
@@ -27,7 +28,7 @@ def predict():
     image.save(in_memory_file)
     data = np.fromstring(in_memory_file.getvalue(), dtype=np.uint8)
     img = cv2.imdecode(data, 1)
-    prediction = net.predict(img)
+    prediction = net.predict(img, 5) #TODO replace 5 with number from call
     return json.dumps(prediction)
 
 @app.route('/toast', methods=['GET'])
