@@ -1,7 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import App from './app'
-import io from 'socket.io-client';
+import App from './App'
 
 // const socket = io.connect('http://' + document.domain + ':' + location.port);
 //

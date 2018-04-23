@@ -6,11 +6,6 @@ import ImageForm from '../components/ImageForm';
 
 class Content extends Component {
 
-  constructor(){
-    super()
-
-  }
-
   render(){
     return(
       <div className="content">

@@ -9,7 +9,7 @@ const Activations = (props) => {
         {
           props.filepaths.map((filepath, i)=>(
             <div key={i} className="activation">
-              <img style={{width: 75, height: 75, imageRendering: 'pixelated'}}src={filepath}/>
+              <img alt="activation" style={{width: 75, height: 75, imageRendering: 'pixelated'}}src={filepath}/>
             </div>
           ))
         }
