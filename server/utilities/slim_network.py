@@ -18,10 +18,8 @@ from utilities.preprocess import pad_image
 
 class Network:
     def __init__(self, network_name):
-        path = pad_image('./static/images/penguins3.jpg')
-        image = tf.read_file(path)
-        image = tf.image.decode_jpeg(image, channels=3)
-        #image = tf.image.resize_images(image, (224, 224))
+        self.input_image = tf.placeholder(tf.uint8, shape=(None, None, 3))
+        image = tf.convert_to_tensor(self.input_image, dtype=tf.uint8)
         if network_name == 'InceptionV1':
             shift_index = False
             traverse_graph = traverse.inception_v1
@@ -57,9 +55,8 @@ class Network:
         self.checkpoints_dir = 'checkpoints'
         self.shift_index = shift_index
 
-    def predict(self):
-
-        probabilities = self.sess.run(self.output_layer)
+    def predict(self, img, num_items):
+        probabilities = self.sess.run(self.output_layer, feed_dict={self.input_image:img})
         probabilities = probabilities[0, 0:]
         sorted_inds = [i[0] for i in sorted(enumerate(-probabilities), key=lambda x:x[1])]
 
@@ -68,10 +65,16 @@ class Network:
         shift = 0
         if self.shift_index:
             shift = 1
-
-        for i in range(5):
+        results = []
+        for i in range(num_items):
             index = sorted_inds[i]
-            print('Probability %0.2f%% => [%s]' % (probabilities[index] * 100, names[index + shift]))
+
+            item = {}
+            item['name'] = names[index + shift]
+            item['value'] = round(float(probabilities[index]), 4)
+            results.append(item)
+            #print('Probability %0.2f%% => [%s]' % (probabilities[index] * 100, names[index + shift]))
+        return results
 
     def print_layers(self):
         layer = self.sess.graph.get_tensor_by_name('Softmax:0') #TODO replace with output_layer
