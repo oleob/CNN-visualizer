@@ -11,10 +11,6 @@ clear_temp_folder()
 app = Flask(__name__, static_folder='./static', template_folder='./static')
 net = Network('InceptionV1')
 
-@app.route('/')
-def index():
-    return render_template('index.html')
-
 @app.route('/activations', methods=['POST'])
 def activations():
     layer_name = json.loads(request.data)['layer_name']
@@ -30,6 +26,13 @@ def predict():
     img = cv2.imdecode(data, 1)
     prediction = net.predict(img, 5) #TODO replace 5 with number from call
     return json.dumps(prediction)
+
+@app.route('/change_settings', methods=['POST'])
+def change_settings():
+    network_name = json.loads(request.data)['network_name']
+    global net
+    net = Network(network_name)
+    return json.dumps({'status': 'ok'})
 
 @app.route('/toast', methods=['GET'])
 def toast():
