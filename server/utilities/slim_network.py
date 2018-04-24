@@ -18,6 +18,7 @@ from utilities.preprocess import pad_image
 
 class Network:
     def __init__(self, network_name):
+        tf.reset_default_graph()
         self.input_image = tf.placeholder(tf.uint8, shape=(None, None, 3))
         image = tf.convert_to_tensor(self.input_image, dtype=tf.uint8)
         if network_name == 'InceptionV1':
