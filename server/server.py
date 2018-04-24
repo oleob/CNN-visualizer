@@ -24,7 +24,7 @@ def predict():
     image.save(in_memory_file)
     data = np.fromstring(in_memory_file.getvalue(), dtype=np.uint8)
     img = cv2.imdecode(data, 1)
-    prediction = net.predict(img, 5) #TODO replace 5 with number from call
+    prediction = net.predict(img, 5, False) #TODO replace 5 with number from call
     return json.dumps(prediction)
 
 @app.route('/change_settings', methods=['POST'])

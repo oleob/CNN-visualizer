@@ -55,8 +55,10 @@ class Network:
         self.imagenet_labels = imagenet.create_readable_names_for_imagenet_labels()
 
 
-    def predict(self, img, num_items):
-        img = pad_image(img)
+    def predict(self, img, num_items, pad_image):
+        if pad_image:
+            img = pad_image(img)
+            
         sess = tf.Session(config=self.sess_config)
         self.init_fn(sess)
         probabilities = sess.run(self.output_layer, feed_dict={self.input_image:img})
