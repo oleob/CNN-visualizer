@@ -5,8 +5,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 class Taylor:
-    def __init__(self, sess, traverse_graph, epsilon=1e-10):
-        self.sess = sess
+    def __init__(self, init_fn, sess_config, traverse_graph, epsilon=1e-10):
+        self.init_fn = init_fn
+        self.sess_config = sess_config
         self.epsilon = epsilon
         self.graph = sess.graph
         self.traverse_graph = traverse_graph
@@ -114,7 +115,9 @@ class Taylor:
         return activation * c_o - L * c_p - H * c_n
 
     def run_relevances(self, relevances):
-        result = self.sess.run(relevances)
+        sess = tf.Session(config=self.sess_config)
+        self.init_fn(sess)
+        result = sess.run(relevances)
         for r in range(len(result)):
             res = result[r]
             if(len(res.shape) >= 4):

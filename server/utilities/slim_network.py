@@ -46,11 +46,8 @@ class Network:
                 probabilities = tf.nn.softmax(logits)
 
                 init_fn = slim.assign_from_checkpoint_fn(os.path.join(checkpoints_dir, 'vgg_16.ckpt'), slim.get_model_variables('vgg_16'))
-        config = tf.ConfigProto(device_count = {'GPU': 0})
-        sess = tf.Session(config=config)
-        #sess = tf.Session()
-        init_fn(sess)
-        self.sess = sess
+        self.init_fn = init_fn
+        self.sess_config = tf.ConfigProto(device_count = {'GPU': 0})
         self.output_layer = probabilities
         self.traverse_graph = traverse_graph
         self.checkpoints_dir = 'checkpoints'
@@ -60,7 +57,9 @@ class Network:
 
     def predict(self, img, num_items):
         img = pad_image(img)
-        probabilities = self.sess.run(self.output_layer, feed_dict={self.input_image:img})
+        sess = tf.Session(config=self.sess_config)
+        self.init_fn(sess)
+        probabilities = sess.run(self.output_layer, feed_dict={self.input_image:img})
         probabilities = probabilities[0, 0:]
         sorted_inds = [i[0] for i in sorted(enumerate(-probabilities), key=lambda x:x[1])]
 
@@ -78,7 +77,9 @@ class Network:
         return results
 
     def print_layers(self):
-        layer = self.sess.graph.get_tensor_by_name('Softmax:0') #TODO replace with output_layer
+        sess = tf.Session(config=self.sess_config)
+        self.init_fn(sess)
+        layer = sess.graph.get_tensor_by_name('Softmax:0') #TODO replace with output_layer
         while not ('ExpandDims' in layer.name):
             print(layer.name, layer.shape)
             layer = self.get_parent(layer, 1)
@@ -90,6 +91,6 @@ class Network:
         return parent
 
     def deep_taylor(self):
-        taylor = Taylor(self.sess, self.traverse_graph)
+        taylor = Taylor( self.init_fn, self.sess_config, self.traverse_graph)
         relevances = taylor()
         taylor.run_relevances(relevances)
