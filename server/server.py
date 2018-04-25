@@ -34,6 +34,10 @@ def change_settings():
     net = Network(network_name)
     return json.dumps({'status': 'ok'})
 
+@app.route('/layer_names', methods=['GET'])
+def layer_names():
+    return json.dumps({'names' : net.get_layer_names()})
+
 @app.route('/toast', methods=['GET'])
 def toast():
     net.get_gradients('mixed3b')
