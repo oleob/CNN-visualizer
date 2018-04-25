@@ -1,12 +1,20 @@
 import React,  { Component } from 'react';
+import { Link } from 'react-router-dom';
 import AppBar from 'material-ui/AppBar';
 import IconButton from 'material-ui/IconButton';
 import MenuIcon from '@material-ui/icons/Menu';
 import Tabs, { Tab } from 'material-ui/Tabs';
 import { withStyles } from 'material-ui/styles';
+import {withRouter} from 'react-router-dom';
 import Toolbar from 'material-ui/Toolbar';
 
 import SettingsDrawer from '../components/SettingsDrawer';
+
+const HomeLink = props => <Link to="/" style={{ textDecoration: 'none' }} {...props}/>
+const PredictLink = props => <Link to="/predict" style={{ textDecoration: 'none' }} {...props}/>
+const VisualizeLink = props => <Link to="/visualize" style={{ textDecoration: 'none' }} {...props}/>
+
+const links = ['/', '/predict', '/visualize'];
 
 const styles = {
   root: {
@@ -25,9 +33,12 @@ const styles = {
 };
 
 class Header extends Component {
-  state = {
-    showDrawer: false,
-    pageIndex: 0
+  constructor(props) {
+    super();
+    this.state = {
+      showDrawer: false,
+      pageIndex: links.indexOf(props.location.pathname)
+    }
   }
 
   toggleDrawer = () => {
@@ -51,9 +62,9 @@ class Header extends Component {
                 <MenuIcon onClick={this.toggleDrawer}/>
               </IconButton>
               <Tabs className={classes.tabs} value={this.state.pageIndex} onChange={this.handleChange} indicatorColor="secondary" textColor="secondary" centered>
-                <Tab label="Item One" />
-                <Tab label="Item Two" />
-                <Tab label="Item Three" />
+                <Tab label="Home" component={HomeLink} />
+                <Tab label="Predict" component={PredictLink} />
+                <Tab label="Visualize" component={VisualizeLink} />
               </Tabs>
             </Toolbar>
           </AppBar>
@@ -64,4 +75,4 @@ class Header extends Component {
   }
 }
 
-export default withStyles(styles)(Header);
+export default withRouter(withStyles(styles)(Header));
