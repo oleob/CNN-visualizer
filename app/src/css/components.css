@@ -1,12 +1,3 @@
-.imageForm{
-}
-
-.scoreboard{
-  width: 250px;
-  margin: auto;
-  margin-top: 10px;
-}
-
 .activations{
   transition: all .2s ease-in-out;
   display: flex;
