@@ -1,4 +1,6 @@
 import React, { Component } from 'react';
+import { BrowserRouter } from 'react-router-dom';
+
 import './css/grid.css';
 import './css/components.css';
 
@@ -10,11 +12,13 @@ class App extends Component {
 
   render() {
     return(
-      <div className="grid">
-        <Header />
-        <Content />
-        <Footer />
-      </div>
+      <BrowserRouter>
+        <div className="grid">
+            <Header />
+            <Content />
+            <Footer />
+        </div>
+      </BrowserRouter>
     );
   }
 }
