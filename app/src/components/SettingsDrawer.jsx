@@ -6,6 +6,7 @@ import Select from 'material-ui/Select';
 import { FormControl } from 'material-ui/Form';
 import { InputLabel } from 'material-ui/Input';
 import { withStyles } from 'material-ui/styles';
+import { CircularProgress } from 'material-ui/Progress';
 
 import {changeSettings} from '../utilities/apiCalls';
 
@@ -19,17 +20,23 @@ const styles = theme => ({
     marginTop: 30,
   },
   saveButton: {
-    width: 'auto',
     marginLeft: 20,
     marginRight: 20,
     marginTop: 15,
-  }
-})
+  },
+  buttonContainer: {
+    textAlign: 'center',
+  },
+  loadingIcon: {
+    marginTop: 15,
+  },
+});
 
 class SettingsDrawer extends Component {
 
   state = {
      network_name: networkNames[0],
+     loading: false,
    };
 
   handleChange = event => {
@@ -37,8 +44,13 @@ class SettingsDrawer extends Component {
   };
 
   saveChanges = event => {
+    this.setState({loading: true});
     changeSettings(this.state).then((res)=>{
-      console.log(res)
+      if(res.status==='ok'){
+        this.setState({
+          loading: false,
+        })
+      }
     });
   }
 
@@ -59,9 +71,16 @@ class SettingsDrawer extends Component {
             </Select>
           </FormControl>
         </form>
-        <Button className={classes.saveButton} onClick={this.saveChanges} variant="raised">
-          Save changes
-        </Button>
+        <div className={classes.buttonContainer}>
+          {!this.state.loading &&
+            <Button className={classes.saveButton} onClick={this.saveChanges} variant="raised">
+              Save changes
+            </Button>
+          }
+          {this.state.loading &&
+            <CircularProgress size={68} className={classes.loadingIcon}/>
+          }
+        </div>
       </Drawer>
     );
   }
