@@ -12,6 +12,18 @@ const postRequest = (url, body) => {
   });
 }
 
+const getRequest = (url) => {
+  return new Promise((resolve, reject) => {
+    axios.get(url).then((res) => {
+      if(res.status===200){
+        resolve(res.data)
+      } else {
+        reject(res)
+      }
+    });
+  });
+}
+
 const activations = (layerName) => {
   return new Promise((resolve, reject) => {
     axios.post('activations', {layer_name: layerName}).then((res) => {
@@ -20,4 +32,4 @@ const activations = (layerName) => {
   })
 }
 
-export {activations, postRequest};
+export {activations, postRequest, getRequest};
