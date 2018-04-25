@@ -3,7 +3,9 @@ import React, { Component } from 'react';
 class Visualize extends Component {
   render() {
     return(
-      <h1>Visualizing happens here</h1>
+      <div className="content">
+        <h1>Visualizing happens here</h1>
+      </div>
     );
   }
 }
