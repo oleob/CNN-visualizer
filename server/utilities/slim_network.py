@@ -16,7 +16,7 @@ from tensorflow.contrib import slim
 from utilities.slim_taylor import Taylor
 import utilities.traverse as traverse
 from utilities.preprocess import pad_image
-from utilities.layer_names import inception_names
+from utilities.layer_names import inception_names, vgg_16_names
 
 class Network:
     def __init__(self, network_name):
@@ -48,6 +48,7 @@ class Network:
                 probabilities = tf.nn.softmax(logits)
 
                 init_fn = slim.assign_from_checkpoint_fn(os.path.join(checkpoints_dir, 'vgg_16.ckpt'), slim.get_model_variables('vgg_16'))
+                self.layer_names = vgg_16_names(tf.get_default_graph().get_tensor_by_name('Softmax:0'))
 
         self.processed_image = processed_image
         self.init_fn = init_fn
