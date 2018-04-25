@@ -13,8 +13,9 @@ import SettingsDrawer from '../components/SettingsDrawer';
 const HomeLink = props => <Link to="/" style={{ textDecoration: 'none' }} {...props}/>
 const PredictLink = props => <Link to="/predict" style={{ textDecoration: 'none' }} {...props}/>
 const VisualizeLink = props => <Link to="/visualize" style={{ textDecoration: 'none' }} {...props}/>
+const ActivationsLink = props => <Link to="/activations" style={{ textDecoration: 'none' }} {...props}/>
 
-const links = ['/', '/predict', '/visualize'];
+const links = ['/', '/predict', '/visualize', '/activations'];
 
 const styles = {
   root: {
@@ -65,6 +66,7 @@ class Header extends Component {
                 <Tab label="Home" component={HomeLink} />
                 <Tab label="Predict" component={PredictLink} />
                 <Tab label="Visualize" component={VisualizeLink} />
+                <Tab label="Activations" component={ActivationsLink} />
               </Tabs>
             </Toolbar>
           </AppBar>

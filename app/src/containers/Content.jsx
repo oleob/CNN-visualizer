@@ -7,18 +7,18 @@ import {Route, Switch} from 'react-router-dom';
 import Home from './subContainers/Home';
 import Predict from './subContainers/Predict';
 import Visualize from './subContainers/Visualize';
+import Activations from './subContainers/Activations';
 
 class Content extends Component {
 
   render(){
     return(
-      <div className="content">
-        <Switch>
-          <Route exact path="/" component={Home} />
-          <Route path="/predict" component={Predict} />
-          <Route path="/visualize" component={Visualize} />
-        </Switch>
-      </div>
+      <Switch>
+        <Route exact path="/" component={Home} />
+        <Route path="/predict" component={Predict} />
+        <Route path="/visualize" component={Visualize} />
+        <Route path="/activations" component={Activations} />
+      </Switch>
     );
   }
 
