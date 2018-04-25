@@ -3,7 +3,7 @@ import { withStyles } from 'material-ui/styles';
 import Button from 'material-ui/Button';
 import { CircularProgress } from 'material-ui/Progress';
 
-import {predict} from '../utilities/apiCalls';
+import {postRequest} from '../utilities/apiCalls';
 import Scoreboard from './Scoreboard';
 
 const styles={
@@ -45,7 +45,7 @@ class ImageForm extends Component {
           loading: true,
           results: [],
         });
-        predict(data).then((results)=>{
+        postRequest('/predict', data).then((results)=>{
           this.setState({
             results,
             loading: false,

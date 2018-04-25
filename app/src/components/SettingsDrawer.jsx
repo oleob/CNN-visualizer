@@ -8,7 +8,7 @@ import { InputLabel } from 'material-ui/Input';
 import { withStyles } from 'material-ui/styles';
 import { CircularProgress } from 'material-ui/Progress';
 
-import {changeSettings} from '../utilities/apiCalls';
+import {postRequest} from '../utilities/apiCalls';
 
 const networkNames = ['InceptionV1', 'vgg_16'];
 
@@ -35,7 +35,7 @@ const styles = theme => ({
 class SettingsDrawer extends Component {
 
   state = {
-     network_name: networkNames[0],
+     networkName: networkNames[0],
      loading: false,
    };
 
@@ -45,12 +45,12 @@ class SettingsDrawer extends Component {
 
   saveChanges = event => {
     this.setState({loading: true});
-    changeSettings(this.state).then((res)=>{
-      if(res.status==='ok'){
-        this.setState({
-          loading: false,
-        })
-      }
+    const settings = {
+      network_name: this.state.networkName,
+    };
+
+    postRequest('/change_settings', settings).then((res)=>{
+      this.setState({loading: false})
     });
   }
 
@@ -62,7 +62,7 @@ class SettingsDrawer extends Component {
         <form autoComplete="off">
           <FormControl className={classes.networkName} >
             <InputLabel htmlFor="controlled-open-select">Model</InputLabel>
-            <Select value={this.state.network_name} onChange={this.handleChange} inputProps={{ name: 'network_name', id: 'controlled-open-select',}}>
+            <Select value={this.state.networkName} onChange={this.handleChange} inputProps={{ name: 'networkName', id: 'controlled-open-select',}}>
               {
                 networkNames.map((name, i) => (
                   <MenuItem key={i} value={name}>{name}</MenuItem>
