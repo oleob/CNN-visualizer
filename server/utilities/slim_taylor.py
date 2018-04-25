@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 class Taylor:
-    def __init__(self, init_fn, sess_config, traverse_graph, epsilon=1e-10):
+    def __init__(self, input_image, init_fn, sess_config, traverse_graph, epsilon=1e-10):
         self.init_fn = init_fn
         self.sess_config = sess_config
         self.epsilon = epsilon
@@ -13,6 +13,7 @@ class Taylor:
         self.traverse_graph = traverse_graph
         self.output_layer = self.graph.get_tensor_by_name('Softmax:0') #TODO replace with tf.get_default_graph()
         self.new_output = tf.placeholder(tf.float32, self.output_layer.shape)
+        self.input_image = input_image
 
     def __call__(self):
         relevances = [self.output_layer]
@@ -117,7 +118,8 @@ class Taylor:
     def run_relevances(self, relevances):
         sess = tf.Session(config=self.sess_config)
         self.init_fn(sess)
-        result = sess.run(relevances)
+        img = cv2.imread('./static/images/penguins3.jpg',1)
+        result = sess.run(relevances, feed_dict={self.input_image: img})
         for r in range(len(result)):
             res = result[r]
             if(len(res.shape) >= 4):
