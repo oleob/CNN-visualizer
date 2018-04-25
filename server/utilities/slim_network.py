@@ -15,6 +15,7 @@ from tensorflow.contrib import slim
 from utilities.slim_taylor import Taylor
 import utilities.traverse as traverse
 from utilities.preprocess import pad_image
+from utilities.layer_names import inception_names
 
 class Network:
     def __init__(self, network_name):
@@ -27,12 +28,12 @@ class Network:
             image_size = inception.inception_v1.default_image_size
             processed_image = inception_preprocessing.preprocess_image(image, image_size, image_size, is_training=False)
             processed_images  = tf.expand_dims(processed_image, 0)
-
             with slim.arg_scope(inception.inception_v1_arg_scope()):
                 logits, _ = inception.inception_v1(processed_images, num_classes=1001, is_training=False)
                 probabilities = tf.nn.softmax(logits)
 
                 init_fn = slim.assign_from_checkpoint_fn(os.path.join(checkpoints_dir, 'inception_v1.ckpt'), slim.get_model_variables('InceptionV1'))
+                self.layer_names = inception_names(tf.get_default_graph().get_tensor_by_name('Softmax:0'))
         elif network_name == 'vgg_16':
             shift_index = True
             traverse_graph = traverse.vgg_16
@@ -58,7 +59,7 @@ class Network:
     def predict(self, img, num_items, pad_image):
         if pad_image:
             img = pad_image(img)
-            
+
         sess = tf.Session(config=self.sess_config)
         self.init_fn(sess)
         probabilities = sess.run(self.output_layer, feed_dict={self.input_image:img})
@@ -96,3 +97,6 @@ class Network:
         taylor = Taylor( self.init_fn, self.sess_config, self.traverse_graph)
         relevances = taylor()
         taylor.run_relevances(relevances)
+
+    def get_layer_names(self):
+        return self.layer_names
