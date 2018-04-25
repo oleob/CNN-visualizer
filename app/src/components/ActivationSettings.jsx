@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import Paper from 'material-ui/Paper';
 import { withStyles } from 'material-ui/styles';
 import Typography from 'material-ui/Typography';
-import {getRequest} from '../utilities/apiCalls';
+import { getRequest, postRequest } from '../utilities/apiCalls';
 import { MenuItem } from 'material-ui/Menu';
 import Select from 'material-ui/Select';
 import { FormControl } from 'material-ui/Form';
@@ -12,7 +12,6 @@ import { CircularProgress } from 'material-ui/Progress';
 
 const styles = {
   paper: {
-    width: 300,
     display: 'inline-block',
     padding: 20,
   },
@@ -33,6 +32,7 @@ class ActivationSettings extends Component {
   state = {
     layerNames: [],
     selectedLayer: '',
+    loading: false,
   }
 
   componentDidMount() {
@@ -48,7 +48,18 @@ class ActivationSettings extends Component {
   };
 
   getActivations = () => {
-    console.log("hurray")
+    const body = {
+      layer_name: this.state.selectedLayer,
+    };
+    this.setState({
+      loading: true,
+    })
+    postRequest('/activations', body).then((res) => {
+      console.log(res)
+      this.setState({
+        loading: false,
+      })
+    })
   }
 
   render() {
@@ -65,7 +76,7 @@ class ActivationSettings extends Component {
               <Select value={this.state.selectedLayer} onChange={this.handleChange} inputProps={{ name: 'selectedLayer', id: 'controlled-open-select',}}>
                 {
                   this.state.layerNames.map((name, i) => (
-                    <MenuItem key={i} value={name.name}>{name.name}</MenuItem>
+                    <MenuItem key={i} value={name.id}>{name.name}</MenuItem>
                   ))
                 }
               </Select>
