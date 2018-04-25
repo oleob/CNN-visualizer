@@ -1,27 +1,23 @@
 import React, {Component} from 'react';
+import {Route, Switch} from 'react-router-dom';
 
-import Graph from '../components/Graph';
-import Layer from '../components/Layer';
-import ImageForm from '../components/ImageForm';
+//import Graph from '../components/Graph';
+//import Layer from '../components/Layer';
+//import ImageForm from '../components/ImageForm';
+import Home from './subContainers/Home';
+import Predict from './subContainers/Predict';
+import Visualize from './subContainers/Visualize';
 
 class Content extends Component {
 
   render(){
     return(
       <div className="content">
-        <div className="contentCenter">
-          <ImageForm />
-          <Graph spacing={40} size={150}>
-            <Layer layerName="mixed3a"/>
-            <Layer layerName="mixed3b"/>
-            <Layer layerName="mixed4a"/>
-            <Layer layerName="mixed4b"/>
-            <Layer layerName="mixed4c"/>
-            <Layer layerName="mixed4d"/>
-            <Layer layerName="mixed4e"/>
-            <Layer layerName="mixed5a"/>
-          </Graph>
-        </div>
+        <Switch>
+          <Route exact path="/" component={Home} />
+          <Route path="/predict" component={Predict} />
+          <Route path="/visualize" component={Visualize} />
+        </Switch>
       </div>
     );
   }
