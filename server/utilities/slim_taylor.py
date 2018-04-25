@@ -9,9 +9,9 @@ class Taylor:
         self.init_fn = init_fn
         self.sess_config = sess_config
         self.epsilon = epsilon
-        self.graph = sess.graph
+        self.graph = tf.get_default_graph()
         self.traverse_graph = traverse_graph
-        self.output_layer = sess.graph.get_tensor_by_name('Softmax:0')
+        self.output_layer = self.graph.get_tensor_by_name('Softmax:0') #TODO replace with tf.get_default_graph()
         self.new_output = tf.placeholder(tf.float32, self.output_layer.shape)
 
     def __call__(self):
