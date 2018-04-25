@@ -3,6 +3,7 @@ import os
 import tensorflow as tf
 import matplotlib.pyplot as plt
 import cv2
+import uuid
 
 checkpoints_dir = 'checkpoints'
 
@@ -47,6 +48,8 @@ class Network:
                 probabilities = tf.nn.softmax(logits)
 
                 init_fn = slim.assign_from_checkpoint_fn(os.path.join(checkpoints_dir, 'vgg_16.ckpt'), slim.get_model_variables('vgg_16'))
+
+        self.processed_image = processed_image
         self.init_fn = init_fn
         self.sess_config = tf.ConfigProto(device_count = {'GPU': 0})
         self.output_layer = probabilities
@@ -94,9 +97,50 @@ class Network:
         return parent
 
     def deep_taylor(self):
-        taylor = Taylor( self.init_fn, self.sess_config, self.traverse_graph)
+        taylor = Taylor(self.input_image, self.init_fn, self.sess_config, self.traverse_graph)
         relevances = taylor()
         taylor.run_relevances(relevances)
 
     def get_layer_names(self):
         return self.layer_names
+
+    def get_layer_activations(self, layer_name):
+        #load image
+        img = cv2.imread('./static/images/penguins3.jpg',1)
+        sess = tf.Session(config=self.sess_config)
+        self.init_fn(sess)
+        #Get the tensor by name
+        tensor = sess.graph.get_tensor_by_name(layer_name)
+        print([inp for inp in tensor.op.inputs])
+
+        img, units = sess.run([self.processed_image, tensor],feed_dict={self.input_image: img})
+        img = 255*(img + 1.0)/2.0
+        #format the filters
+        filters = units[0,:,:,:]
+        filter_size = units.shape[3]
+        width = units.shape[1]
+        height = units.shape[2]
+
+        sorted_filters = list()
+        for i in range(filter_size):
+            fi = filters[:,:,i]
+            sorted_filters.append((fi.sum(),i,fi))
+        sorted_filters = sorted(sorted_filters, reverse=True, key=lambda tup: tup[0])
+        filepaths = []
+        for i in range(200):
+            filter_tuple = sorted_filters[i]
+            activation = filter_tuple[2]/filter_tuple[2].max()
+            height, width, channels = img.shape
+            activation = cv2.resize(activation,(width, height), interpolation=0)
+            r,g,b = cv2.split(img)
+            r = r*activation
+            g = g*activation
+            b = b*activation
+            newImg = cv2.merge((r,g,b))
+
+
+            #filepath = 'static/images/temp/'+ str(uuid.uuid4()) + '.jpg'
+            filepath = 'static/images/temp/' + str(filter_tuple[1]) + '__' + str(filter_tuple[0]) + '.jpg'
+            cv2.imwrite(filepath, newImg)
+            filepaths.append(filepath)
+        return filepaths
