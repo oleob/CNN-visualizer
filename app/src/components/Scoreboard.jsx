@@ -1,11 +1,21 @@
 import React, { Component } from 'react';
+import { withStyles } from 'material-ui/styles';
 import Table, { TableBody, TableCell, TableHead, TableRow } from 'material-ui/Table';
 import Paper from 'material-ui/Paper';
 
+const styles = {
+  scoreboard: {
+    width: 500,
+    display: 'inline-block',
+  }
+}
+
 class Scoreboard extends Component {
   render(){
+    const {classes} = this.props;
+
     return(
-      <Paper className="scoreboard">
+      <Paper className={classes.scoreboard}>
         <Table>
           <TableHead>
             <TableRow>
@@ -29,4 +39,4 @@ class Scoreboard extends Component {
   }
 }
 
-export default Scoreboard;
+export default withStyles(styles)(Scoreboard);
