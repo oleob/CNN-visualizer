@@ -6,19 +6,18 @@ import matplotlib.pyplot as plt
 
 class Taylor:
     def __init__(self, input_image, init_fn, sess_config, traverse_graph, epsilon=1e-10):
+        self.epsilon = epsilon
+
+        graph = tf.get_default_graph()
+        output_layer = graph.get_tensor_by_name('Softmax:0')
+        layer = output_layer.op.inputs[0]
+        relevances = [output_layer]
+        relevances = traverse_graph(self, layer, relevances)
+
         self.init_fn = init_fn
         self.sess_config = sess_config
-        self.epsilon = epsilon
-        self.graph = tf.get_default_graph()
-        self.traverse_graph = traverse_graph
-        self.output_layer = self.graph.get_tensor_by_name('Softmax:0') #TODO replace with tf.get_default_graph()
-        self.new_output = tf.placeholder(tf.float32, self.output_layer.shape)
         self.input_image = input_image
-
-    def __call__(self):
-        relevances = [self.output_layer]
-        layer = self.output_layer.op.inputs[0]
-        return self.traverse_graph(self, layer, relevances)
+        self.relevances = relevances
 
     def get_parent(self, child, num_skips):
         parent = child
@@ -115,24 +114,24 @@ class Taylor:
 
         return activation * c_o - L * c_p - H * c_n
 
-    def run_relevances(self, relevances):
+    def run_relevances(self):
         sess = tf.Session(config=self.sess_config)
         self.init_fn(sess)
         img = cv2.imread('./static/images/penguins3.jpg',1)
-        result = sess.run(relevances, feed_dict={self.input_image: img})
+        result = sess.run(self.relevances, feed_dict={self.input_image: img})
+        filepaths = []
         for r in range(len(result)):
             res = result[r]
-            if(len(res.shape) >= 4):
-                print(r, relevances[r].op.name, res.shape)
+            if(len(res.shape) >= 4 and res.shape[1] > 1):
                 res = res[0,:,:,:]
-                #res = res[:,:,0] + res[:,:,1] + res[:,:,2]
-                acti = np.sum(res, axis=2)
-                acti /= acti.max()
-                fig = plt.figure()
-                ax = fig.add_subplot(111)
-                ax.axis('off')
-                ax.imshow(acti, cmap='Reds', interpolation='nearest')
+                float_img = np.sum(res, axis=2)
+                float_img /= float_img.max()
+                float_img *= 255
+                img = cv2.resize(float_img, (224, 224), interpolation=0).astype(np.uint8)
+                img = cv2.applyColorMap(img, cv2.COLORMAP_JET)
 
-                fig.savefig('static/images/temp/{0}_{1}.jpg'.format(r, np.sum(res)))
-            else:
-                print('-', relevances[r].op.name, result[r][0].shape)
+                filepath = 'static/images/temp/{0}_{1}.jpg'.format(r, np.sum(res))
+                cv2.imwrite(filepath, img)
+                filepaths.append(filepath)
+        sess.close()
+        return filepaths
