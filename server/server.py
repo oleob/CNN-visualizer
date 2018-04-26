@@ -17,6 +17,12 @@ def activations():
     filepaths = net.get_layer_activations(layer_name)
     return json.dumps({'filepaths': filepaths})
 
+@app.route('/deep_taylor', methods=['POST'])
+def deep_taylor():
+    filepaths = net.get_deep_taylor()
+    #return json.dumps({'filepaths': filepaths})
+    return json.dumps({'message': 'Done'})
+
 @app.route("/predict", methods=["POST"])
 def predict():
     image = request.files['image']
