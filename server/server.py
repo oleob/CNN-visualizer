@@ -9,7 +9,8 @@ import io
 clear_temp_folder()
 
 app = Flask(__name__, static_folder='./static', template_folder='./static')
-net = Network('InceptionV1')
+net = Network('InceptionV1', add_vis_graph=True, naive=False, x_dim=200, y_dim=200)
+#net = Network('vgg_16', add_vis_graph=True, naive=False)
 
 @app.route('/activations', methods=['POST'])
 def activations():
@@ -42,6 +43,14 @@ def change_settings():
 @app.route('/layer_names', methods=['GET'])
 def layer_names():
     return json.dumps({'names' : net.get_layer_names()})
+
+@app.route('/visualize', methods=['POST'])
+def visualize():
+    layer_name = json.loads(request.data)['layer_name']
+    channel = json.loads(request.data)['channel']
+    opt = (layer_name, channel)
+    filepaths = net.visualize(opt)
+    return json.dumps(filepaths)
 
 @app.route('/toast', methods=['GET'])
 def toast():
