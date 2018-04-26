@@ -2,7 +2,6 @@ import tensorflow as tf
 
 def inception_v1(self, layer, relevances):
     while not ('ExpandDims' in layer.name):
-        print(layer.name)
         with tf.variable_scope(layer.op.name + '_taylor'):
             #if squeeze skip to next node
             if 'SpatialSqueeze' in layer.name:
@@ -28,7 +27,6 @@ def inception_v1(self, layer, relevances):
             elif 'concat' in layer.name:
                 activation = self.get_parent(layer, 4)
                 relevances.append(self.backprop_inception(layer, activation, relevances[-1]))
-                #print(layer.op.name, activation.op.name)
                 layer = activation
             elif 'MaxPool' in layer.name:
                 activation = self.get_parent(layer, 1)
@@ -56,7 +54,6 @@ def inception_v1(self, layer, relevances):
 
 def vgg_16 (self, layer, relevances):
     while not ('ExpandDims' in layer.name):
-        print(layer.name)
         with tf.variable_scope(layer.op.name + '_taylor'):
             if 'squeezed' in layer.name:
                 layer = self.get_parent(layer, 1)
