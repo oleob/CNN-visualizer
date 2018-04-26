@@ -9,7 +9,8 @@ import io
 clear_temp_folder()
 
 app = Flask(__name__, static_folder='./static', template_folder='./static')
-net = Network('InceptionV1')
+net = Network('InceptionV1', add_vis_graph=True, naive=False, x_dim=200, y_dim=200)
+#net = Network('vgg_16', add_vis_graph=True, naive=False)
 
 @app.route('/')
 def index():
@@ -30,6 +31,14 @@ def predict():
     img = cv2.imdecode(data, 1)
     prediction = net.predict(img, 5) #TODO replace 5 with number from call
     return json.dumps(prediction)
+
+@app.route('/visualize', methods=['POST'])
+def visualize():
+    layer_name = json.loads(request.data)['layer_name']
+    channel = json.loads(request.data)['channel']
+    opt = (layer_name, channel)
+    filepaths = net.visualize(opt)
+    return json.dumps(filepaths)
 
 @app.route('/toast', methods=['GET'])
 def toast():
