@@ -35,6 +35,8 @@ def inception_names(layer):
             activation = get_parent(layer, 3)
             names.append(create_name(layer))
             layer = activation
+        else:
+            raise Exception('Unkown layer name: ' + str(layer.name))
     return names[::-1]
 
 def vgg_16_names(layer):
@@ -57,6 +59,8 @@ def vgg_16_names(layer):
             activation = get_parent(layer, 1)
             names.append(create_name(layer))
             layer = activation
+        else:
+            raise Exception('Unkown layer name: ' + str(layer.name))
     return names[::-1]
 
 def create_name(layer):
