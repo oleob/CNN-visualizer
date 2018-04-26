@@ -58,7 +58,7 @@ class Network:
         self.checkpoints_dir = 'checkpoints'
         self.shift_index = shift_index
         self.imagenet_labels = imagenet.create_readable_names_for_imagenet_labels()
-
+        self.taylor = Taylor(self.input_image, self.init_fn, self.sess_config, self.traverse_graph)
 
     def predict(self, img, num_items, pad_image):
         if pad_image:
@@ -97,10 +97,8 @@ class Network:
             parent = [inp for inp in parent.op.inputs if not (inp.op.type=='Const')][0]
         return parent
 
-    def deep_taylor(self):
-        taylor = Taylor(self.input_image, self.init_fn, self.sess_config, self.traverse_graph)
-        relevances = taylor()
-        taylor.run_relevances(relevances)
+    def get_deep_taylor(self):
+        return self.taylor.run_relevances()
 
     def get_layer_names(self):
         return self.layer_names
@@ -128,7 +126,7 @@ class Network:
             sorted_filters.append((fi.sum(),i,fi))
         sorted_filters = sorted(sorted_filters, reverse=True, key=lambda tup: tup[0])
         filepaths = []
-        for i in range(200):
+        for i in range(10):
             filter_tuple = sorted_filters[i]
             activation = filter_tuple[2]/filter_tuple[2].max()
             height, width, channels = img.shape
