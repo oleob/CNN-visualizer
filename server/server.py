@@ -20,8 +20,7 @@ def activations():
 @app.route('/deep_taylor', methods=['POST'])
 def deep_taylor():
     filepaths = net.get_deep_taylor()
-    #return json.dumps({'filepaths': filepaths})
-    return json.dumps({'message': 'Done'})
+    return json.dumps({'filepaths': filepaths})
 
 @app.route("/predict", methods=["POST"])
 def predict():
