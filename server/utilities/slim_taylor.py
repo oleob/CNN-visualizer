@@ -5,11 +5,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 class Taylor:
-    def __init__(self, input_image, init_fn, sess_config, traverse_graph, epsilon=1e-10):
+    def __init__(self, input_image, init_fn, sess_config, traverse_graph, output_layer, epsilon=1e-10):
         self.epsilon = epsilon
 
         graph = tf.get_default_graph()
-        output_layer = graph.get_tensor_by_name('Softmax:0')
+        #output_layer = graph.get_tensor_by_name('Softmax:0')
         layer = output_layer.op.inputs[0]
         relevances = [output_layer]
         relevances = traverse_graph(self, layer, relevances)

@@ -39,13 +39,13 @@ class Network:
             traverse_graph = traverse.inception_v1
             image_size = inception.inception_v1.default_image_size
             processed_image = inception_preprocessing.preprocess_image(image, image_size, image_size, is_training=False)
-            processed_images  = tf.expand_dims(processed_image, 0)
+            processed_image = tf.expand_dims(processed_image, 0)
             with slim.arg_scope(inception.inception_v1_arg_scope()):
-                logits, _ = inception.inception_v1(input_graph, num_classes=1001, is_training=False)
+                logits, _ = inception.inception_v1(processed_image, num_classes=1001, is_training=False)
                 probabilities = tf.nn.softmax(logits)
 
                 init_fn = slim.assign_from_checkpoint_fn(os.path.join(checkpoints_dir, 'inception_v1.ckpt'), slim.get_model_variables('InceptionV1'))
-                self.layer_names = inception_names(tf.get_default_graph().get_tensor_by_name('Softmax:0'))
+                self.layer_names = inception_names(probabilities)
         elif network_name == 'vgg_16':
             shift_index = True
             traverse_graph = traverse.vgg_16
@@ -60,7 +60,7 @@ class Network:
                 probabilities = tf.nn.softmax(logits)
 
                 init_fn = slim.assign_from_checkpoint_fn(os.path.join(checkpoints_dir, 'vgg_16.ckpt'), slim.get_model_variables('vgg_16'))
-                self.layer_names = vgg_16_names(tf.get_default_graph().get_tensor_by_name('Softmax:0'))
+                self.layer_names = vgg_16_names(probabilities)
 
         self.processed_image = processed_image
         self.init_fn = init_fn
@@ -70,7 +70,7 @@ class Network:
         self.checkpoints_dir = 'checkpoints'
         self.shift_index = shift_index
         self.imagenet_labels = imagenet.create_readable_names_for_imagenet_labels()
-        self.taylor = Taylor(self.input_image, self.init_fn, self.sess_config, self.traverse_graph)
+        self.taylor = Taylor(self.input_image, self.init_fn, self.sess_config, self.traverse_graph, self.output_layer)
         self.naive = naive
 
     def predict(self, img, num_items, pad_image):
