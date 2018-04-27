@@ -74,7 +74,7 @@ class Network:
         return self.taylor.run_relevances()
 
     def get_layer_names(self):
-        return self.layer_names
+        return self.layer_names(self.output_layer)
 
     def get_layer_activations(self, layer_name):
         #load image
