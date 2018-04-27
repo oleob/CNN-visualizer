@@ -1,21 +1,17 @@
 [[source]]
-
 url = "https://pypi.python.org/simple"
 verify_ssl = true
 name = "pypi"
 
-
 [packages]
-
 flask = "*"
 flask-socketio = "*"
 opencv-python = "*"
-
+tensorflow-gpu = "==1.4.1"
+matplotlib = "*"
+pillow = "*"
 
 [dev-packages]
 
-
-
 [requires]
-
 python_version = "3.6"

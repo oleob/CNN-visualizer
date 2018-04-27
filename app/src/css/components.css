@@ -1,0 +1,10 @@
+.activations{
+  transition: all .2s ease-in-out;
+  display: flex;
+  justify-content:center;
+  flex-wrap: wrap;
+}
+
+.activation{
+  padding: 20px;
+}
