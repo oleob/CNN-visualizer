@@ -10,7 +10,6 @@ import utilities.feature_vis.input_parameterization as par
 
 
 def build(x_dim=224, y_dim=224, pad=None, jitter=None, rotate=None, scale=None, naive=False, dream_img=None):
-
     # parametrize the input space for better results
     # TODO: give the option to use more parameterization spaces
     if dream_img is None and naive is False:
@@ -43,7 +42,7 @@ def add_transforms(tensor, pad, jitter, rotate, scale):
         tensor = trans.random_rotate(tensor, rotate)
     if scale is not None:
         tensor = trans.random_scale(tensor, scale)
-    tensor = trans.random_jitter(tensor, 2)
+    #tensor = trans.random_jitter(tensor, 2)
     return tensor
 
 

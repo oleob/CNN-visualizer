@@ -11,6 +11,7 @@ from preprocessing import vgg_preprocessing
 
 
 # TODO: in case of deepdream, convert the rgb image into the fourier space first
+# TODO: there is a bug when using different dimension-sizes ..fix it
 def fft_img(x_dim=200, y_dim=200):
     # input_array = misc.random_noise_img(batch_size, x_dim, y_dim)
     # #input_shape = [batch_size, 3, x_dim, y_dim]
@@ -51,6 +52,7 @@ def fft_img(x_dim=200, y_dim=200):
     # fft_tensor = tf.stack(imgs) / 4.0
     fft_tensor = img / 4.0
 
+
     # decorrelate the colors
     # TODO: understand the following color-decorrelation a bit better, the following is just for imagenet
     color_correlation_svd_sqrt = np.asarray([[0.26, 0.09, 0.02],
@@ -61,6 +63,8 @@ def fft_img(x_dim=200, y_dim=200):
     color_correlation_normalized = color_correlation_svd_sqrt / max_norm_svd_sqrt
     flat = tf.matmul(flat, color_correlation_normalized.T)
     rgb = tf.reshape(flat, tf.shape(fft_tensor))
+
+    rgb = tf.transpose(rgb, [1, 0, 2])
 
     # sigmoid the tensor
     rgb = tf.nn.sigmoid(rgb[..., :3])

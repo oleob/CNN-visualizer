@@ -60,7 +60,10 @@ def init_network(network_name, network_type, naive=False, x_dim=-1, y_dim=-1, pa
     else:
         raise Exception('Unkown network type: ' + network_type)
     with slim.arg_scope(scope()):
-        logits, _ = net(input_graph, num_classes=num_classes, is_training=False)
+        if network_type=='visualize':
+            logits, _ = net(input_graph, num_classes=num_classes, is_training=False, spatial_squeeze=False, global_pool=True)
+        else:
+            logits, _ = net(input_graph, num_classes=num_classes, is_training=False)
         probabilities = tf.nn.softmax(logits)
         probabilities = tf.identity(probabilities, name='probabilities')
         init_fn = slim.assign_from_checkpoint_fn(os.path.join(checkpoints_dir, '{0}.ckpt'.format(network_name)), slim.get_model_variables(network_name))

@@ -34,7 +34,7 @@ const activations = (layerName) => {
 
 const visualize = (parameters_here) => {
   return new Promise((resolve, reject) => {
-    axios.post('/visualize', {layer_name: 'InceptionV1/InceptionV1/Mixed_3b/concat:0', channel: 0}).then((res) => {
+    axios.post('/visualize', {layer_name: 'InceptionV1/InceptionV1/Mixed_4d/concat:0', channel: 139}).then((res) => {
       resolve(res.data);
     })
   })

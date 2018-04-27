@@ -58,13 +58,15 @@ def visualize():
     opt = (layer_name, channel)
 
     # parameters which can be used in the random transformation-graph
+    # TODO: get these params from the client-side
     pad = 16  # 16
     jitter = 8  # 8
     angles = list(range(-5, 5))  # (-5, 5)
     scales = np.arange(0.95, 1.1, 0.02, dtype='float32')  # (0.9, 1.1, 0.1)
 
-    init_fn = init_network(network_name, 'visualize', pad=pad, jitter=jitter, rotate=angles, scale=scales, naive=False)
+    init_fn = init_network(network_name, 'visualize', x_dim=100, y_dim=300, pad=pad, jitter=jitter, rotate=angles, scale=scales, naive=False)
     net = Network(network_name, init_fn)
+
     filepaths = net.visualize(opt)
     return json.dumps(filepaths)
 
