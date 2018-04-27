@@ -16,8 +16,8 @@ uploaded_image = None
 def init_pred_net():
     global pred_net
     if pred_net is None:
-        input_layer, probabilities, init_fn = init_network(network_name, 'predict')
-        pred_net = Network(network_name, input_layer, probabilities, init_fn)
+        init_fn = init_network(network_name, 'predict')
+        pred_net = Network(network_name, init_fn)
 
 @app.route('/activations', methods=['POST'])
 def activations():
