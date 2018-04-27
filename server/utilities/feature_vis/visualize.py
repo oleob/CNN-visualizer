@@ -15,7 +15,7 @@ import utilities.feature_vis.misc as misc
 
 
 
-def visualize_features(opt, steps=200, lr=0.06, optimizer=None, dream_img=None, naive=False, save_run=False):
+def visualize_features(opt, init_fn, steps=200, lr=0.06, optimizer=None, dream_img=None, naive=False, save_run=False):
 
     num_visualizations = 1
     mix = False
@@ -49,20 +49,8 @@ def visualize_features(opt, steps=200, lr=0.06, optimizer=None, dream_img=None, 
         # writer = tf.summary.FileWriter(logdir, graph)
         # tf.summary.merge_all()
 
-
-        ###########################################
-
-        init_fn = slim.assign_from_checkpoint_fn(os.path.join('checkpoints', 'inception_v1.ckpt'),
-                                                 slim.get_model_variables('InceptionV1'))
-
-        # init_fn = slim.assign_from_checkpoint_fn(os.path.join('checkpoints', 'vgg_16.ckpt'),
-        #                                          slim.get_model_variables('vgg_16'))
-
+        # initialize all weights in the pre-trained network
         init_fn(sess)
-
-
-        ###########################################
-
 
         # train the network to optimize the image(s)
         start_time = time.time()
