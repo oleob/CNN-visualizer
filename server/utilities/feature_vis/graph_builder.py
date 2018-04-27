@@ -21,13 +21,8 @@ def build(x_dim=224, y_dim=224, pad=None, jitter=None, rotate=None, scale=None, 
     trans_graph = add_transforms(input_tensor, pad=pad, jitter=jitter, rotate=rotate, scale=scale)
     trans_graph = tf.identity(trans_graph, name='transformed')
 
-    # change the range
-    #low, high = (-117, 255 - 117)
-    # lower, upper = (0, 1)
-    # prep_graph = lower + trans_graph * (upper - lower)
-
     # need to define the dimensions because of tf.slim
-    prep_graph = trans_graph[:x_dim, :y_dim, :]
+    prep_graph = trans_graph[pad:x_dim+pad, pad:y_dim+pad, :]
     prep_graph = tf.reshape(prep_graph, shape=(x_dim, y_dim, 3))
 
     return prep_graph

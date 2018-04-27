@@ -45,11 +45,9 @@ def fft_img(x_dim=200, y_dim=200):
     img = tf.spectral.irfft2d(scaled_spectrum)
     img = img[:3, :y_dim, :x_dim]
     img = tf.transpose(img, [1, 2, 0])
-    # imgs = tf.expand_dims(img, 0)
 
     # create a tensor of the list of image-tensors
     # TODO: why divide by 4? ..found the reason somewhere
-    # fft_tensor = tf.stack(imgs) / 4.0
     fft_tensor = img / 4.0
 
 
@@ -68,10 +66,6 @@ def fft_img(x_dim=200, y_dim=200):
 
     # sigmoid the tensor
     rgb = tf.nn.sigmoid(rgb[..., :3])
-
-    # forget height and width of the input
-    # zero = tf.identity(0)
-    # rgb = rgb[:, zero:, zero:, :]
 
     # name the image-tensor so we can eval() it and see the results during optimization
     rgb = tf.identity(rgb, name='image')

@@ -89,7 +89,6 @@ def visualize_features(opt, init_fn, steps=200, lr=0.06, optimizer=None, dream_i
                 # save the current optimized image (for testing purposes and cool animations)
                 if save_run:
                     img = image_tensor.eval()
-                    print(i, '\t', img[100][100][0], img[100][100][1], img[100][100][2])
                     if dream_img is None and naive is False:
                         misc.save_image(img, 'static/images/temp/' + 'img' + str(i) + '.jpg')
                     else:

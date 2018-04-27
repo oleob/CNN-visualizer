@@ -3,7 +3,7 @@ import numpy as np
 import json
 import io
 from flask import Flask, render_template, request, make_response, Response
-from utilities.slim_network import Network
+from utilities.slim_network import Network, VisNetwork
 from utilities.cleaner import clear_temp_folder
 from utilities.network_initializer import init_network
 
@@ -74,15 +74,16 @@ def visualize():
 
     # parameters which can be used in the random transformation-graph
     # TODO: get these params from the client-side
-    pad = 16  # 16
+    # TODO: find a way to pad the minimal required amount
+    pad = 25  # 16
     jitter = 8  # 8
     angles = list(range(-5, 5))  # (-5, 5)
     scales = np.arange(0.95, 1.1, 0.02, dtype='float32')  # (0.9, 1.1, 0.1)
 
-    init_fn = init_network(network_name, 'visualize', x_dim=100, y_dim=300, pad=pad, jitter=jitter, rotate=angles, scale=scales, naive=False)
-    net = Network(network_name, init_fn)
+    init_fn = init_network(network_name, 'visualize', x_dim=200, y_dim=200, pad=pad, jitter=jitter, rotate=angles, scale=scales, naive=False)
+    net = VisNetwork(init_fn)
 
-    filepaths = net.visualize(opt)
+    filepaths = net.visualize(opt, steps=100)
     return json.dumps(filepaths)
 
 @app.route('/toast', methods=['GET'])

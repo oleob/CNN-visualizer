@@ -118,6 +118,11 @@ class Network:
             filepaths.append(filepath)
         return filepaths
 
-    def visualize(self, opt):
-        filepaths = vis.visualize_features(opt, self.init_fn)
+
+class VisNetwork:
+    def __init__(self, init_fn):
+        self.init_fn = init_fn
+
+    def visualize(self, opt, steps):
+        filepaths = vis.visualize_features(opt, self.init_fn, steps=steps, save_run=True)
         return filepaths
