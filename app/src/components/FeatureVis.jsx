@@ -3,6 +3,8 @@ import Button from 'material-ui/Button';
 
 import {visualize} from '../utilities/apiCalls';
 
+import '../css/feature_vis.css';
+
 class FeatureVis extends Component {
   constructor(props) {
     super(props)
@@ -30,10 +32,14 @@ class FeatureVis extends Component {
             Visualize Stuff
           </Button>
         </label>
-          <div>{this.state.results}</div>
+          <div>
+          {this.state.results.map((filepath)=>(
+              <img hspace="10px" vspace="10px" src={filepath} />
+          ))}
+          </div>
       </div>
     )
   }
 }
 
-export default FeatureVis
+export default FeatureVis;

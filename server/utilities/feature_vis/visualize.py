@@ -6,6 +6,7 @@ import tensorflow as tf
 import time
 import os
 #os.environ["CUDA_VISIBLE_DEVICES"]="-1"
+import uuid
 
 from tensorflow.contrib import slim
 
@@ -110,7 +111,7 @@ def visualize_features(opt, steps=200, lr=0.06, optimizer=None, dream_img=None, 
                 sess.run([loss, opt_tensor])
 
             img = image_tensor.eval()
-            filepath = 'static/images/temp/' + 'img' + str(n) + '.jpg'
+            filepath = 'static/images/temp/' + 'img' + str(uuid.uuid4()) + '.jpg'
             misc.save_image(img, filepath)
             filepaths.append(filepath)
 
