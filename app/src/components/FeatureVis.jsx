@@ -3,8 +3,6 @@ import Button from 'material-ui/Button';
 
 import {visualize} from '../utilities/apiCalls';
 
-import '../css/feature_vis.css';
-
 class FeatureVis extends Component {
   constructor(props) {
     super(props)
