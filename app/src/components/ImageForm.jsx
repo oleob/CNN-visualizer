@@ -3,14 +3,16 @@ import { withStyles } from 'material-ui/styles';
 import Button from 'material-ui/Button';
 import { CircularProgress } from 'material-ui/Progress';
 
-import {postRequest} from '../utilities/apiCalls';
+import {getRequest, postRequest} from '../utilities/apiCalls';
 import Scoreboard from './Scoreboard';
 
 const styles={
   imageForm: {
+    marginTop: 20,
   },
   button: {
-    marginTop: 20,
+    marginTop: 5,
+    marginBottom: 5,
     display: 'inline-block',
     minWidth: 0,
   },
@@ -19,24 +21,21 @@ const styles={
     textAlign: 'center',
   },
   scoreboardContainer: {
+    marginTop: 5,
     display: 'block',
     textAlign: 'center',
   }
 };
 
 class ImageForm extends Component {
-  constructor(props) {
-    super(props)
 
-    this.state={
-      results: [],
-      loading: false,
-    }
-
-    this.uploadFile = this.uploadFile.bind(this);
+  state={
+    results: [],
+    loading: false,
+    imageUploaded: false
   }
 
-  uploadFile(event) {
+  uploadFile = event => {
       let file = event.target.files[0];
       if (file) {
         let data = new FormData();
@@ -45,13 +44,25 @@ class ImageForm extends Component {
           loading: true,
           results: [],
         });
-        postRequest('/predict', data).then((results)=>{
-          this.setState({
-            results,
-            loading: false,
-          })
-        })
+        postRequest('/upload_image', data).then((res) => {
+          if (res.status==='ok'){
+            this.setState({
+              imageUploaded: true,
+              loading: false,
+            });
+          }
+        });
       }
+  }
+
+  predict = () => {
+    this.setState({loading: true})
+    getRequest('predict').then((results) => {
+      this.setState({
+        results,
+        loading: false,
+      });
+    });
   }
 
   render() {
@@ -68,6 +79,13 @@ class ImageForm extends Component {
             }
             {this.state.loading && <CircularProgress size={68} />}
           </label>
+          <div className={classes.buttonContainer}>
+            {!this.state.loading &&
+              <Button className={classes.button} variant="raised" disabled={!this.state.imageUploaded} onClick={this.predict} >
+                Predict
+              </Button>
+            }
+          </div>
         </div>
         <div className={classes.scoreboardContainer}>
           <Scoreboard results={this.state.results} />
