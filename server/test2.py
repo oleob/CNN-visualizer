@@ -45,7 +45,7 @@ with tf.Graph().as_default():
     probabilities = tf.nn.softmax(logits)
 
     init_fn = slim.assign_from_checkpoint_fn(
-        os.path.join(checkpoints_dir, 'inception_v1.ckpt'),
+        os.path.join(checkpoints_dir, 'InceptionV1.ckpt'),
         slim.get_model_variables('InceptionV1'))
 
     with tf.Session() as sess:

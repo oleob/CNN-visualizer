@@ -21,16 +21,16 @@ def init_pred_net():
 
 @app.route('/activations', methods=['POST'])
 def activations():
-    input_layer, probabilities, init_fn = init_network(network_name, 'predict')
-    net = Network(network_name, input_layer, probabilities, init_fn)
+    init_fn = init_network(network_name, 'predict')
+    net = Network(network_name, init_fn)
     layer_name = json.loads(request.data)['layer_name']
     filepaths = net.get_layer_activations(layer_name)
     return json.dumps({'filepaths': filepaths})
 
 @app.route('/deep_taylor', methods=['POST'])
 def deep_taylor():
-    input_layer, probabilities, init_fn = init_network(network_name, 'predict')
-    net = Network(network_name, input_layer, probabilities, init_fn)
+    init_fn = init_network(network_name, 'predict')
+    net = Network(network_name, init_fn)
     filepaths = net.get_deep_taylor()
     return json.dumps({'filepaths': filepaths})
 
@@ -71,6 +71,15 @@ def visualize():
     layer_name = json.loads(request.data)['layer_name']
     channel = json.loads(request.data)['channel']
     opt = (layer_name, channel)
+
+    # parameters which can be used in the random transformation-graph
+    pad = 16  # 16
+    jitter = 8  # 8
+    angles = list(range(-5, 5))  # (-5, 5)
+    scales = np.arange(0.95, 1.1, 0.02, dtype='float32')  # (0.9, 1.1, 0.1)
+
+    init_fn = init_network(network_name, 'visualize', pad=pad, jitter=jitter, rotate=angles, scale=scales, naive=False)
+    net = Network(network_name, init_fn)
     filepaths = net.visualize(opt)
     return json.dumps(filepaths)
 

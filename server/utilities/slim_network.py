@@ -8,9 +8,10 @@ from utilities.slim_taylor import Taylor
 import utilities.traverse as traverse
 from utilities.preprocess import pad_image
 from utilities.layer_names import inception_names, vgg_16_names
+import utilities.feature_vis.visualize as vis
 
 class Network:
-    def __init__(self, network_name, input_layer, probabilities, init_fn):
+    def __init__(self, network_name, init_fn):
 
         if network_name == 'InceptionV1':
             shift_index = False
@@ -25,8 +26,8 @@ class Network:
 
         self.init_fn = init_fn
         self.sess_config = tf.ConfigProto(device_count = {'GPU': 0})
-        self.input_image = input_layer
-        self.output_layer = probabilities
+        self.input_image = tf.get_default_graph().get_tensor_by_name('input_layer:0')
+        self.output_layer = tf.get_default_graph().get_tensor_by_name('probabilities:0')
         self.traverse_graph = traverse_graph
         self.shift_index = shift_index
         self.imagenet_labels = imagenet.create_readable_names_for_imagenet_labels()
@@ -115,4 +116,8 @@ class Network:
             filepath = 'static/images/temp/' + str(filter_tuple[1]) + '__' + str(filter_tuple[0]) + '.jpg'
             cv2.imwrite(filepath, newImg)
             filepaths.append(filepath)
+        return filepaths
+
+    def visualize(self, opt):
+        filepaths = vis.visualize_features(opt, self.init_fn)
         return filepaths
