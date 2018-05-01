@@ -68,23 +68,35 @@ def layer_names():
 
 @app.route('/visualize', methods=['POST'])
 def visualize():
+
+    print(request.data)
+
     layer_name = json.loads(request.data)['layer_name']
-    channel = json.loads(request.data)['channel']
+    channel = int(json.loads(request.data)['channel'])
     opt = (layer_name, channel)
 
-    # parameters which can be used in the random transformation-graph
-    # TODO: get these params from the client-side
-    # TODO: find a way to pad the minimal required amount
-    pad = 25  # 16
-    jitter = 8  # 8
-    angles = list(range(-5, 5))  # (-5, 5)
+    dim = int(json.loads(request.data)['dim'])
+
+    # TODO: find a way to pad only the minimal required amount
+    pad = int(json.loads(request.data)['pad'])
+    jitter = int(json.loads(request.data)['jitter'])
+    angle = int(json.loads(request.data)['rotation'])
+    angles = list(range(-angle, angle)) or None
     scales = np.arange(0.95, 1.1, 0.02, dtype='float32')  # (0.9, 1.1, 0.1)
 
-    init_fn = init_network(network_name, 'visualize', x_dim=200, y_dim=200, pad=pad, jitter=jitter, rotate=angles, scale=scales, naive=False)
+    print(angles)
+
+    init_fn = init_network(network_name, 'visualize', x_dim=dim, y_dim=dim, pad=pad, jitter=jitter, rotate=angles, scale=None, naive=False)
     net = VisNetwork(init_fn)
 
-    filepaths = net.visualize(opt, steps=100)
-    return json.dumps(filepaths)
+    # opt = []
+    # for i in range(120, 132):
+    #     opt.append(("InceptionV1/InceptionV1/Mixed_4c/concat:0", i))
+
+    steps = int(json.loads(request.data)['steps'])
+
+    filepaths = net.visualize(opt, steps=steps)
+    return json.dumps({'filepaths': filepaths})
 
 @app.route('/toast', methods=['GET'])
 def toast():

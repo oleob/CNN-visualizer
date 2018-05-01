@@ -10,7 +10,7 @@ const postRequest = (url, body) => {
       }
     });
   });
-}
+};
 
 const getRequest = (url) => {
   return new Promise((resolve, reject) => {
@@ -22,21 +22,7 @@ const getRequest = (url) => {
       }
     });
   });
-}
+};
 
-const activations = (layerName) => {
-  return new Promise((resolve, reject) => {
-    axios.post('activations', {layer_name: layerName}).then((res) => {
-      resolve(res.data);
-    })
-  })
-}
 
-const visualize = (parameters_here) => {
-  return new Promise((resolve, reject) => {
-    axios.post('/visualize', {layer_name: 'InceptionV1/InceptionV1/Mixed_4b/concat:0', channel: 38}).then((res) => {
-      resolve(res.data);
-    })
-  })
-}
-export {activations, postRequest, getRequest, visualize};
+export {postRequest, getRequest};
