@@ -11,23 +11,40 @@ import {withStyles} from "material-ui/styles/index";
 
 
 const styles = {
-  paper: {
+  mainSpan: {
+    display: 'inline-block'
+  },
+  paperSettings: {
     display: 'inline-block',
+    margin: 40,
+    padding: 20,
+    width: 550
+  },
+
+  paperImage: {
+    display: 'inline-block',
+    position: 'absolute',
+    top: 105,
     padding: 20,
   },
-  formControl:{
-    minWidth: 300
+
+  featureImage: {
+    position: 'relative'
   },
-  img: {
-    hspace: "10px",
-    vspace:"10px"
+
+  layerInput: {
+    width: 400,
+    marginRight: 30
   },
-  input: {
-    width: "500px"
+  paramInput: {
+    marginTop: 10,
+    marginRight: 20,
+    width: 60
+
   },
-  Button: {
-    padding: "15px"
-  }
+  visButton: {
+
+  },
 
 };
 
@@ -38,12 +55,13 @@ class FeatureVis extends Component {
     this.state = {
       img_paths: [],
       layer_name: 'InceptionV1/InceptionV1/Mixed_4c/concat:0',
-      channel: 58,
+      channel: 97,
       steps: 200,
       dim: 128,
       pad: 16,
       jitter: 8,
-      rotation: 5
+      rotation: 5,
+      scale: 0.2
     };
   }
 
@@ -57,6 +75,14 @@ class FeatureVis extends Component {
   };
 
   visualizeFeature = (event) => {
+
+    const api_key = 'dc6zaTOxFJmzC';
+    const url = `http://api.giphy.com/v1/gifs/search?q=${'cat'}&api_key=${api_key}`;
+    let cat_index = Math.floor(Math.random() * 24);
+    fetch(url)
+      .then(response => response.json())
+      .then(data => this.setState({ img_paths: [data.data[cat_index].images.fixed_height.url] }));
+
     const body = {
       layer_name: this.state.layer_name,
       channel: this.state.channel,
@@ -79,31 +105,39 @@ class FeatureVis extends Component {
 
 
   render() {
+    const { classes } = this.props;
     return (
-      <div>
-        <Paper>
+      <span className={classes.mainSpan}>
+        <Paper className={classes.paperSettings}>
           <form>
             <FormControl>
-              <TextField label="Layer Name:" name="layer_name" value={this.state.layer_name} onChange={this.handleInputChange} />
-              <TextField label="Channel:" name="channel" value={this.state.channel} onChange={this.handleInputChange} />
-              <TextField label="Steps:" name="steps" value={this.state.steps} onChange={this.handleInputChange} />
-              <TextField label="Size(px):" name="dim" value={this.state.dim} onChange={this.handleInputChange} />
-              <h4>Transforms:</h4>
-              <TextField label="Padding:" name="pad" value={this.state.pad} onChange={this.handleInputChange} />
-              <TextField label="Jitter:" name="jitter" value={this.state.jitter} onChange={this.handleInputChange} />
-              <TextField label="Rotation (0 - 180):" name="rotation" value={this.state.rotation} onChange={this.handleInputChange}/>
-              <FormControlLabel control={<Checkbox/>} label="scale"/>
-              <FormControlLabel control={<Checkbox/>} label="naive"/>
+              <h2>Feature Inversion</h2>
+              <span>
+                <TextField className={classes.layerInput} label="Layer Name:" name="layer_name" value={this.state.layer_name} onChange={this.handleInputChange} />
+                <TextField className={classes.paramInput} label="Channel:" name="channel" value={this.state.channel} onChange={this.handleInputChange} />
+              </span>
+              <span>
+                <TextField className={classes.paramInput} label="Steps:" name="steps" value={this.state.steps} onChange={this.handleInputChange} />
+                <TextField className={classes.paramInput} label="Size:" name="dim" value={this.state.dim} onChange={this.handleInputChange} />
+              </span>
+              <span>
+                <TextField className={classes.paramInput} label="Padding:" name="pad" value={this.state.pad} onChange={this.handleInputChange} />
+                <TextField className={classes.paramInput} label="Jitter:" name="jitter" value={this.state.jitter} onChange={this.handleInputChange} />
+                <TextField className={classes.paramInput} label="Rotation:" name="rotation" value={this.state.rotation} onChange={this.handleInputChange}/>
+                <TextField className={classes.paramInput} label="Scale:" name="scale" value={this.state.scale} onChange={this.handleInputChange}/>
+                <FormControlLabel control={<Checkbox/>} label="naive"/>
+              </span>
             </FormControl>
           </form>
-          <br/>
-          <Button onClick={this.visualizeFeature}>Visualize!</Button>
+          <Button variant="raised" className={classes.visButton} onClick={this.visualizeFeature}>Visualize !</Button>
         </Paper>
-          <img src={this.state.img} alt={this.state.term} />
+        <Paper className={classes.paperImage}>
+          <img className={classes.featureImage} src={this.state.img} alt={this.state.term} />
           {this.state.img_paths.map((filepath, index)=>(
               <img key={index} alt={this.state.layer} src={filepath} />
           ))}
-      </div>
+        </Paper>
+      </span>
     );
   }
 }
