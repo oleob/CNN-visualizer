@@ -84,9 +84,10 @@ def visualize():
     angles = list(range(-angle, angle)) or None
     scales = np.arange(0.95, 1.1, 0.02, dtype='float32')  # (0.9, 1.1, 0.1)
 
-    print(angles)
+    param_space = json.loads(request.data)['param_space']
+    naive = True if param_space == 'naive' else False
 
-    init_fn = init_network(network_name, 'visualize', x_dim=dim, y_dim=dim, pad=pad, jitter=jitter, rotate=angles, scale=None, naive=False)
+    init_fn = init_network(network_name, 'visualize', x_dim=dim, y_dim=dim, pad=pad, jitter=jitter, rotate=angles, scale=None, naive=naive)
     net = VisNetwork(init_fn)
 
     # opt = []
@@ -94,8 +95,9 @@ def visualize():
     #     opt.append(("InceptionV1/InceptionV1/Mixed_4c/concat:0", i))
 
     steps = int(json.loads(request.data)['steps'])
+    lr = float(json.loads(request.data)['lr'])
 
-    filepaths = net.visualize(opt, steps=steps)
+    filepaths = net.visualize(opt, steps=steps, lr=lr, naive=naive)
     return json.dumps({'filepaths': filepaths})
 
 @app.route('/toast', methods=['GET'])

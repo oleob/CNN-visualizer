@@ -22,6 +22,7 @@ def build(x_dim=224, y_dim=224, pad=None, jitter=None, rotate=None, scale=None, 
     trans_graph = tf.identity(trans_graph, name='transformed')
 
     # need to define the dimensions because of tf.slim
+    if pad is None: pad = 0
     prep_graph = trans_graph[pad:x_dim+pad, pad:y_dim+pad, :]
     prep_graph = tf.reshape(prep_graph, shape=(x_dim, y_dim, 3))
 
