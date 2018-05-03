@@ -74,8 +74,6 @@ class ImageForm extends Component {
   }
 
   render() {
-    console.log(this.state)
-    console.log(this.props)
     const {classes} = this.props;
     return (
       <div className={classes.imageForm}>
