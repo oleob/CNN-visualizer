@@ -3,6 +3,8 @@ import cv2
 from tensorflow.python.ops import nn_ops, gen_nn_ops
 import numpy as np
 import matplotlib.pyplot as plt
+import uuid
+
 
 class Taylor:
     def __init__(self, input_image, init_fn, sess_config, traverse_graph, output_layer, epsilon=1e-10):
@@ -114,14 +116,44 @@ class Taylor:
 
         return activation * c_o - L * c_p - H * c_n
 
-    def run_relevances(self):
+    def run_relevances(self, image=None, layer_name=None):
+        image = cv2.imread('./static/images/penguins3.jpg',1)
         sess = tf.Session(config=self.sess_config)
         self.init_fn(sess)
-        img = cv2.imread('./static/images/penguins3.jpg',1)
-        result = sess.run(self.relevances, feed_dict={self.input_image: img})
+        result = sess.run(self.relevances, feed_dict={self.input_image: image})
         filepaths = []
+        filter_rankings = {}
         for r in range(len(result)):
             res = result[r]
+            sorted_filters = []
+            if len(res.shape) >=  4:
+                for i in range(int(res.shape[3])):
+                    filter = res[0,:,:,i]
+
+                    filter_tuple = {}
+                    filter_tuple['score'] = np.sum(filter)
+                    filter_tuple['id'] = i
+                    sorted_filters.append(filter_tuple)
+                    #sorted_filters.append((su, i, filter))
+                #sorted_filters = sorted(sorted_filters, reverse=True, key=lambda tup: tup[0])
+                sorted_filters = sorted(sorted_filters, reverse=True, key=lambda tup: tup['score'])
+                # x = []
+                # z = []
+                # for y in range(len(sorted_filters)):
+                #     # float_img = sorted_filters[y][2]
+                #     # float_img /= float_img.max()
+                #     # float_img *= 255
+                #     # img = cv2.resize(float_img, (224, 224), interpolation=0).astype(np.uint8)
+                #     # img = cv2.applyColorMap(img, cv2.COLORMAP_JET)
+                #     #
+                #     # filepath = 'static/images/temp/filter_{0}_{1}_{2}.jpg'.format(str(self.relevances[r].name.split('/')[2]), y, sorted_filters[y][1])
+                #     # cv2.imwrite(filepath, img)
+                #     x.append(sorted_filters[y][0])
+                #     z.append(y)
+                # plt.bar(z, height=x)
+                # #plt.xticks(z, z);
+                # plt.show()
+            #make sure layer is convolutional and size bigger than 1x1
             if(len(res.shape) >= 4 and res.shape[1] > 1):
                 res = res[0,:,:,:]
                 float_img = np.sum(res, axis=2)
@@ -130,8 +162,13 @@ class Taylor:
                 img = cv2.resize(float_img, (224, 224), interpolation=0).astype(np.uint8)
                 img = cv2.applyColorMap(img, cv2.COLORMAP_JET)
 
-                filepath = 'static/images/temp/{0}_{1}.jpg'.format(r, np.sum(res))
+                #filepath = 'static/images/temp/{0}_{1}.jpg'.format(r, np.sum(res))
+                filepath = 'static/images/temp/'+ str(uuid.uuid4()) + '.jpg'
+
                 cv2.imwrite(filepath, img)
                 filepaths.append(filepath)
-        sess.close()
-        return filepaths
+
+                sorted_filters = sorted_filters[:10]
+                filter_rankings[str(self.relevances[r].name)] = sorted_filters
+        print(filter_rankings)
+        return filepaths, filter_rankings
