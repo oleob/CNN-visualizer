@@ -9,11 +9,14 @@ import Predict from './subContainers/Predict';
 import Visualize from './subContainers/Visualize';
 import Activations from './subContainers/Activations';
 
+import { getRequest } from '../utilities/apiCalls';
+
 class Content extends Component {
 
   state = {
     global: {
-      networkName: 'InceptionV1',
+      networkName: '',
+      imagePath: '',
     },
     home: {
 
@@ -29,8 +32,18 @@ class Content extends Component {
     }
   }
 
+  componentDidMount() {
+    getRequest('/current_settings').then((res)=> {
+      this.setState({
+        global: {
+          imagePath: res.image_path,
+          networkName: res.network_name,
+        },
+      });
+    });
+  }
+
   updateState = (name, values) => {
-    console.log(name, values)
     let newState = {};
     //Map old values to new state
     Object.entries(this.state[name]).map((item) => newState[item[0]] = item[1]);
