@@ -34,8 +34,8 @@ def activations():
 def deep_taylor():
     init_fn = init_network(network_name, 'predict')
     net = Network(network_name, init_fn)
-    filepaths = net.get_deep_taylor()
-    return json.dumps({'filepaths': filepaths})
+    results = net.get_deep_taylor(uploaded_image)
+    return json.dumps({'results': results})
 
 @app.route('/upload_image', methods=['POST'])
 def upload_image():
