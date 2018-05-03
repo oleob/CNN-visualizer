@@ -32,7 +32,15 @@ class ImageForm extends Component {
   state={
     results: [],
     loading: false,
-    imageUploaded: false
+    imageUploaded: false,
+  }
+
+  componentDidMount() {
+    this.setState(this.props.localState)
+  }
+
+  componentWillUnmount() {
+    this.props.updateState(this.state)
   }
 
   uploadFile = event => {
@@ -66,6 +74,8 @@ class ImageForm extends Component {
   }
 
   render() {
+    console.log(this.state)
+    console.log(this.props)
     const {classes} = this.props;
     return (
       <div className={classes.imageForm}>
