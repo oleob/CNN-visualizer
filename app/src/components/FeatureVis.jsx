@@ -5,8 +5,11 @@ import Paper from 'material-ui/Paper';
 import Checkbox from 'material-ui/Checkbox';
 import Radio, { RadioGroup } from 'material-ui/Radio';
 import TextField from 'material-ui/TextField';
+import { MenuItem } from 'material-ui/Menu';
+import Select from 'material-ui/Select';
+import { InputLabel } from 'material-ui/Input';
 
-import { postRequest } from '../utilities/apiCalls';
+import {getRequest, postRequest} from '../utilities/apiCalls';
 import {withStyles} from "material-ui/styles/index";
 
 
@@ -33,7 +36,7 @@ const styles = {
   },
 
   layerInput: {
-    width: 400,
+    width: 300,
     marginRight: 30
   },
   paramInput: {
@@ -68,8 +71,20 @@ class FeatureVis extends Component {
       param_space: 'fourier',
 
       loading: false,
+
+      all_layers: [],
     };
   }
+
+  componentDidMount() {
+    getRequest('/layer_names').then((res) => {
+      this.setState({
+        all_layers: res.names,
+      });
+    })
+  }
+
+
 
   handleInputChange = (event) => {
     const target = event.target;
@@ -131,7 +146,14 @@ class FeatureVis extends Component {
             <FormControl>
               <h2>Feature Inversion</h2>
               <span>
-                <TextField className={classes.layerInput} label="Layer Name:" name="layer_name" value={this.state.layer_name} onChange={this.handleInputChange} />
+                <Select className={classes.layerInput} value={this.state.layer_name} onChange={this.handleInputChange} inputProps={{ name: 'layer_name',}}>
+                {
+                  this.state.all_layers.map((name, i) => (
+                    <MenuItem key={i} value={name.id}>{name.name}</MenuItem>
+                  ))
+                }
+                </Select>
+                {/*<TextField className={classes.layerInput} label="Layer Name:" name="layer_name" value={this.state.layer_name} onChange={this.handleInputChange} />*/}
                 <TextField className={classes.paramInput} label="Channel:" name="channel" value={this.state.channel} onChange={this.handleInputChange} />
               </span>
               <FormLabel component="legend" style={{marginBottom: 0, marginTop: 10}}>Input Parameterization:</FormLabel>
