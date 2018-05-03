@@ -9,6 +9,7 @@ import Scoreboard from './Scoreboard';
 const styles={
   imageForm: {
     marginTop: 20,
+    overflow:'hidden',
   },
   button: {
     marginTop: 5,
@@ -24,7 +25,11 @@ const styles={
     marginTop: 5,
     display: 'block',
     textAlign: 'center',
-  }
+  },
+  previewImage: {
+    maxHeight: 400,
+    maxWidth: 400,
+  },
 };
 
 class ImageForm extends Component {
@@ -32,7 +37,6 @@ class ImageForm extends Component {
   state={
     results: [],
     loading: false,
-    imageUploaded: false,
   }
 
   componentDidMount() {
@@ -55,9 +59,9 @@ class ImageForm extends Component {
         postRequest('/upload_image', data).then((res) => {
           if (res.status==='ok'){
             this.setState({
-              imageUploaded: true,
               loading: false,
             });
+            this.props.updateGlobalState({imagePath: res.image_path})
           }
         });
       }
@@ -74,9 +78,15 @@ class ImageForm extends Component {
   }
 
   render() {
+    console.log(this.props)
     const {classes} = this.props;
     return (
       <div className={classes.imageForm}>
+        {(this.props.globalState.imagePath !== '') &&
+          <div className={classes.buttonContainer}>
+            <img className={classes.previewImage} src={this.props.globalState.imagePath}/>
+          </div>
+        }
         <input accept="image/*" id="raised-button-file" onChange={this.uploadFile} type="file" style={{"display" : "none"}}/>
         <div className={classes.buttonContainer}>
           <label className={classes.button} htmlFor="raised-button-file">
@@ -89,7 +99,7 @@ class ImageForm extends Component {
           </label>
           <div className={classes.buttonContainer}>
             {!this.state.loading &&
-              <Button className={classes.button} variant="raised" disabled={!this.state.imageUploaded} onClick={this.predict} >
+              <Button className={classes.button} variant="raised"  onClick={this.predict} >
                 Predict
               </Button>
             }
