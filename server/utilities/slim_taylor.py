@@ -116,22 +116,20 @@ class Taylor:
 
         return activation * c_o - L * c_p - H * c_n
 
-    def run_relevances(self, image=None, layer_name=None):
-        image = cv2.imread('./static/images/penguins3.jpg',1)
+    def run_relevances(self, image, layer_name=None):
         sess = tf.Session(config=self.sess_config)
         self.init_fn(sess)
-        result = sess.run(self.relevances, feed_dict={self.input_image: image})
-        filepaths = []
-        filter_rankings = {}
-        for r in range(len(result)):
-            res = result[r]
+        relevances = sess.run(self.relevances, feed_dict={self.input_image: image})
+        results = {}
+        for r in range(len(relevances)):
+            res = relevances[r]
             sorted_filters = []
             if len(res.shape) >=  4:
                 for i in range(int(res.shape[3])):
                     filter = res[0,:,:,i]
 
                     filter_tuple = {}
-                    filter_tuple['score'] = np.sum(filter)
+                    filter_tuple['score'] = float(np.sum(filter))
                     filter_tuple['id'] = i
                     sorted_filters.append(filter_tuple)
                     #sorted_filters.append((su, i, filter))
@@ -166,9 +164,9 @@ class Taylor:
                 filepath = 'static/images/temp/'+ str(uuid.uuid4()) + '.jpg'
 
                 cv2.imwrite(filepath, img)
-                filepaths.append(filepath)
+                #filepaths.append(filepath)
 
                 sorted_filters = sorted_filters[:10]
-                filter_rankings[str(self.relevances[r].name)] = sorted_filters
-        print(filter_rankings)
-        return filepaths, filter_rankings
+                #filter_rankings[str(self.relevances[r].name)] = sorted_filters
+                results[str(self.relevances[r].name)] = {'image_path': filepath, 'filter_rankings': sorted_filters}
+        return results
