@@ -2,16 +2,19 @@ import cv2
 import numpy as np
 import json
 import io
+import uuid
 from flask import Flask, render_template, request, make_response, Response
 from utilities.slim_network import Network
 from utilities.cleaner import clear_temp_folder
 from utilities.network_initializer import init_network
 
+
 clear_temp_folder()
 network_name = 'InceptionV1'
 app = Flask(__name__, static_folder='./static', template_folder='./static')
 pred_net = None
-uploaded_image = None
+image_path = './static/images/penguins3.jpg'
+uploaded_image = cv2.imread(image_path,1)
 
 def init_pred_net():
     global pred_net
@@ -43,7 +46,11 @@ def upload_image():
     img = cv2.imdecode(data, 1)
     global uploaded_image
     uploaded_image = img
-    return json.dumps({'status': 'ok'}) #TODO return processed image here
+
+    filepath = 'static/images/temp/'+ str(uuid.uuid4()) + '.jpg'
+    cv2.imwrite(filepath, img)
+
+    return json.dumps({'status': 'ok', 'image_path': filepath})
 
 @app.route("/predict", methods=['GET'])
 def predict():
@@ -82,6 +89,13 @@ def visualize():
     net = Network(network_name, init_fn)
     filepaths = net.visualize(opt)
     return json.dumps(filepaths)
+
+@app.route('/current_settings', methods=['GET'])
+def current_settings():
+    settings = {}
+    settings['image_path'] = image_path
+    settings['network_name'] = network_name
+    return json.dumps(settings)
 
 @app.route('/toast', methods=['GET'])
 def toast():
