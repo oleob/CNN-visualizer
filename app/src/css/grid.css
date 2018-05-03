@@ -21,7 +21,6 @@ html, body, #root{
 .content{
   grid-column: 2/3;
   grid-row: 2/3;
-  overflow-x: hidden;
 }
 
 .footer{
