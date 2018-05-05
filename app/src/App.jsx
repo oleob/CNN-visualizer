@@ -10,12 +10,26 @@ import Footer from './containers/Footer';
 
 class App extends Component {
 
+  state = {
+    networkName: '',
+    imagePath: '',
+  }
+
+  updateState = (values) => {
+    let newState = {};
+    //Map old values to new state
+    Object.entries(this.state).map((item) => newState[item[0]] = item[1]);
+    //map new values to new state
+    Object.entries(values).map((item) => newState[item[0]] = item[1]);
+    this.setState(newState);
+  }
+
   render() {
     return(
       <BrowserRouter>
         <div className="grid">
-            <Header />
-            <Content />
+            <Header updateGlobalState={this.updateState}/>
+            <Content updateGlobalState={this.updateState}/>
             <Footer />
         </div>
       </BrowserRouter>

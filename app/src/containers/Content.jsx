@@ -15,10 +15,6 @@ import { getRequest } from '../utilities/apiCalls';
 class Content extends Component {
 
   state = {
-    global: {
-      networkName: '',
-      imagePath: '',
-    },
     home: {
 
     },
@@ -63,6 +59,7 @@ class Content extends Component {
         render={() => (<Home
           name="home"
           updateState={this.updateState}
+          updateGlobalState={this.props.updateGlobalState}
           globalState={this.state.global}
           localState={this.state.home} />)}
         />
@@ -70,6 +67,7 @@ class Content extends Component {
         render={() => (<Predict
           name="predict"
           updateState={this.updateState}
+          updateGlobalState={this.props.updateGlobalState}
           globalState={this.state.global}
           localState={this.state.predict} />)}
         />
@@ -77,6 +75,7 @@ class Content extends Component {
         render={() => (<Visualize
           name="visualize"
           updateState={this.updateState}
+          updateGlobalState={this.props.updateGlobalState}
           globalState={this.state.global}
           localState={this.state.visualize} />)}
         />
@@ -84,6 +83,7 @@ class Content extends Component {
         render={() => (<Activations
           name="activations"
           updateState={this.updateState}
+          updateGlobalState={this.props.updateGlobalState}
           globalState={this.state.global}
           localState={this.state.activations} />)}
         />
@@ -91,6 +91,7 @@ class Content extends Component {
         render={() => (<DeepTaylor
           name="deepTaylor"
           updateState={this.updateState}
+          updateGlobalState={this.props.updateGlobalState}
           globalState={this.state.global}
           localState={this.state.deepTaylor} />)}
         />

@@ -8,10 +8,6 @@ class DeepTaylor extends Component {
     this.props.updateState(this.props.name, newState);
   }
 
-  updateGlobalState = (newState) => {
-    this.props.updateState('global', newState);
-  }
-
   render() {
     return(
       <div className="content">
@@ -19,7 +15,7 @@ class DeepTaylor extends Component {
           localState={this.props.localState}
           globalState={this.props.globalState}
           updateState={this.updateState}
-          updateGlobalState={this.updateGlobalState}
+          updateGlobalState={this.props.updateGlobalState}
         />
       </div>
     )
