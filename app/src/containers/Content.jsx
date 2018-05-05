@@ -10,8 +10,6 @@ import Visualize from './subContainers/Visualize';
 import Activations from './subContainers/Activations';
 import DeepTaylor from './subContainers/DeepTaylor';
 
-import { getRequest } from '../utilities/apiCalls';
-
 class Content extends Component {
 
   state = {
@@ -32,17 +30,6 @@ class Content extends Component {
     }
   }
 
-  componentDidMount() {
-    getRequest('/current_settings').then((res)=> {
-      this.setState({
-        global: {
-          imagePath: res.image_path,
-          networkName: res.network_name,
-        },
-      });
-    });
-  }
-
   updateState = (name, values) => {
     let newState = {};
     //Map old values to new state
@@ -60,7 +47,7 @@ class Content extends Component {
           name="home"
           updateState={this.updateState}
           updateGlobalState={this.props.updateGlobalState}
-          globalState={this.state.global}
+          globalState={this.props.globalState}
           localState={this.state.home} />)}
         />
         <Route path="/predict"
@@ -68,7 +55,7 @@ class Content extends Component {
           name="predict"
           updateState={this.updateState}
           updateGlobalState={this.props.updateGlobalState}
-          globalState={this.state.global}
+          globalState={this.props.globalState}
           localState={this.state.predict} />)}
         />
         <Route path="/visualize"
@@ -76,7 +63,7 @@ class Content extends Component {
           name="visualize"
           updateState={this.updateState}
           updateGlobalState={this.props.updateGlobalState}
-          globalState={this.state.global}
+          globalState={this.props.globalState}
           localState={this.state.visualize} />)}
         />
         <Route path="/activations"
@@ -84,7 +71,7 @@ class Content extends Component {
           name="activations"
           updateState={this.updateState}
           updateGlobalState={this.props.updateGlobalState}
-          globalState={this.state.global}
+          globalState={this.props.globalState}
           localState={this.state.activations} />)}
         />
         <Route path="/deep_taylor"
@@ -92,7 +79,7 @@ class Content extends Component {
           name="deepTaylor"
           updateState={this.updateState}
           updateGlobalState={this.props.updateGlobalState}
-          globalState={this.state.global}
+          globalState={this.props.globalState}
           localState={this.state.deepTaylor} />)}
         />
       </Switch>
