@@ -8,11 +8,22 @@ import Header from './containers/Header';
 import Content from './containers/Content';
 import Footer from './containers/Footer';
 
+import { getRequest } from './utilities/apiCalls';
+
 class App extends Component {
 
   state = {
     networkName: '',
     imagePath: '',
+  }
+
+  componentDidMount() {
+    getRequest('/current_settings').then((res)=> {
+      this.setState({
+          imagePath: res.image_path,
+          networkName: res.network_name,
+        });
+    });
   }
 
   updateState = (values) => {
@@ -28,8 +39,8 @@ class App extends Component {
     return(
       <BrowserRouter>
         <div className="grid">
-            <Header updateGlobalState={this.updateState}/>
-            <Content updateGlobalState={this.updateState}/>
+            <Header globalState={this.state} updateGlobalState={this.updateState}/>
+            <Content globalState={this.state} updateGlobalState={this.updateState}/>
             <Footer />
         </div>
       </BrowserRouter>
