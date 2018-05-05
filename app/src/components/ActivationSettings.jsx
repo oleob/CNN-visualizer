@@ -55,7 +55,6 @@ class ActivationSettings extends Component {
       loading: true,
     })
     postRequest('/activations', body).then((res) => {
-      console.log(res)
       this.setState({
         loading: false,
       })
