@@ -78,13 +78,12 @@ class ImageForm extends Component {
   }
 
   render() {
-    console.log(this.props)
     const {classes} = this.props;
     return (
       <div className={classes.imageForm}>
         {(this.props.globalState.imagePath !== '') &&
           <div className={classes.buttonContainer}>
-            <img className={classes.previewImage} src={this.props.globalState.imagePath}/>
+            <img alt="current" className={classes.previewImage} src={this.props.globalState.imagePath}/>
           </div>
         }
         <input accept="image/*" id="raised-button-file" onChange={this.uploadFile} type="file" style={{"display" : "none"}}/>

@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import DeepTaylorUnit from './DeepTaylorUnit';
 import { withStyles } from 'material-ui/styles';
 
