@@ -25,8 +25,10 @@ def init_pred_net():
 @app.route('/activations', methods=['POST'])
 def activations():
     init_pred_net()
-    layer_name = json.loads(request.data)['layer_name']
-    result = pred_net.get_layer_activations(uploaded_image, layer_name)
+    data = json.loads(request.data)
+    layer_name = data['layer_name']
+    num_activations = int(data['num_activations'])
+    result = pred_net.get_layer_activations(uploaded_image, layer_name, num_activations)
     return json.dumps({'result': result})
 
 @app.route('/deep_taylor', methods=['POST'])
