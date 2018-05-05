@@ -68,11 +68,11 @@ class Header extends Component {
                 <Tab label="Predict" component={PredictLink} />
                 <Tab label="Visualize" component={VisualizeLink} />
                 <Tab label="Activations" component={ActivationsLink} />
-                <Tab label="Deep Taylor Decomposition" component={DeepTaylorLink} /> 
+                <Tab label="Deep Taylor Decomposition" component={DeepTaylorLink} />
               </Tabs>
             </Toolbar>
           </AppBar>
-          <SettingsDrawer toggleDrawer={this.toggleDrawer} showDrawer={this.state.showDrawer} />
+          <SettingsDrawer globalState={this.props.globalState} updateGlobalState={this.props.updateGlobalState} toggleDrawer={this.toggleDrawer} showDrawer={this.state.showDrawer} />
         </div>
       </div>
     );

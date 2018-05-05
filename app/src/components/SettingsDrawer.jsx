@@ -34,10 +34,13 @@ const styles = theme => ({
 
 class SettingsDrawer extends Component {
 
-  state = {
-     networkName: networkNames[0],
-     loading: false,
-   };
+  constructor(props) {
+    super(props);
+    this.state = {
+       networkName: props.globalState.networkName,
+       loading: false,
+     }
+  }
 
   handleChange = event => {
    this.setState({ [event.target.name]: event.target.value });
@@ -51,6 +54,9 @@ class SettingsDrawer extends Component {
 
     postRequest('/change_settings', settings).then((res)=>{
       this.setState({loading: false})
+      this.props.updateGlobalState({
+        networkName: this.state.networkName,
+      })
     });
   }
 
