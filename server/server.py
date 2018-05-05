@@ -24,10 +24,9 @@ def init_pred_net():
 
 @app.route('/activations', methods=['POST'])
 def activations():
-    init_fn = init_network(network_name, 'predict')
-    net = Network(network_name, init_fn)
+    init_pred_net()
     layer_name = json.loads(request.data)['layer_name']
-    filepaths = net.get_layer_activations(layer_name)
+    filepaths = pred_net.get_layer_activations(uploaded_image, layer_name)
     return json.dumps({'filepaths': filepaths})
 
 @app.route('/deep_taylor', methods=['POST'])
