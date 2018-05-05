@@ -10,6 +10,8 @@ import { InputLabel } from 'material-ui/Input';
 import Button from 'material-ui/Button';
 import { CircularProgress } from 'material-ui/Progress';
 
+import ActivationDisplay from './ActivationDisplay';
+
 const styles = {
   paper: {
     display: 'inline-block',
@@ -33,6 +35,7 @@ class ActivationSettings extends Component {
     layerNames: [],
     selectedLayer: '',
     loading: false,
+    result: {}
   }
 
   componentDidMount() {
@@ -56,12 +59,14 @@ class ActivationSettings extends Component {
     })
     postRequest('/activations', body).then((res) => {
       this.setState({
+        result: res.result,
         loading: false,
       })
     })
   }
 
   render() {
+    console.log(this.state)
     const { classes } = this.props;
     return(
       <div className={classes.container}>
@@ -92,6 +97,7 @@ class ActivationSettings extends Component {
             }
           </div>
         </Paper>
+        <ActivationDisplay result={this.state.result}/>
       </div>
     )
   }
