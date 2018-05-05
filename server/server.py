@@ -46,10 +46,10 @@ def upload_image():
     img = cv2.imdecode(data, 1)
     global uploaded_image
     uploaded_image = img
-
     filepath = 'static/images/temp/'+ str(uuid.uuid4()) + '.jpg'
     cv2.imwrite(filepath, img)
-
+    global image_path
+    image_path = filepath
     return json.dumps({'status': 'ok', 'image_path': filepath})
 
 @app.route("/predict", methods=['GET'])
