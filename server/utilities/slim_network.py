@@ -77,17 +77,15 @@ class Network:
     def get_layer_names(self):
         return self.layer_names(self.output_layer)
 
-    def get_layer_activations(self, layer_name):
+    def get_layer_activations(self, image, layer_name):
         #load image
-        img = cv2.imread('./static/images/penguins3.jpg',1)
         sess = tf.Session(config=self.sess_config)
         self.init_fn(sess)
         #Get the tensor by name
         tensor = sess.graph.get_tensor_by_name(layer_name)
         print([inp for inp in tensor.op.inputs])
 
-        img, units = sess.run([self.processed_image, tensor],feed_dict={self.input_image: img})
-        img = 255*(img + 1.0)/2.0
+        units = sess.run(tensor,feed_dict={self.input_image: image})
         #format the filters
         filters = units[0,:,:,:]
         filter_size = units.shape[3]
@@ -99,24 +97,17 @@ class Network:
             fi = filters[:,:,i]
             sorted_filters.append((fi.sum(),i,fi))
         sorted_filters = sorted(sorted_filters, reverse=True, key=lambda tup: tup[0])
-        filepaths = []
+        result = {}
         for i in range(10):
             filter_tuple = sorted_filters[i]
             activation = filter_tuple[2]/filter_tuple[2].max()
-            height, width, channels = img.shape
+            height, width, channels = [224,224,3]
             activation = cv2.resize(activation,(width, height), interpolation=0)
-            r,g,b = cv2.split(img)
-            r = r*activation
-            g = g*activation
-            b = b*activation
-            newImg = cv2.merge((r,g,b))
-
-
-            #filepath = 'static/images/temp/'+ str(uuid.uuid4()) + '.jpg'
-            filepath = 'static/images/temp/' + str(filter_tuple[1]) + '__' + str(filter_tuple[0]) + '.jpg'
+            newImg = activation*255
+            filepath = 'static/images/temp/'+ str(uuid.uuid4()) + '.jpg'
             cv2.imwrite(filepath, newImg)
-            filepaths.append(filepath)
-        return filepaths
+            result[str(filter_tuple[1])] = {'image_path': filepath}
+        return result
 
     def visualize(self, opt):
         filepaths = vis.visualize_features(opt, self.init_fn)
