@@ -116,7 +116,7 @@ class Taylor:
 
         return activation * c_o - L * c_p - H * c_n
 
-    def run_relevances(self, image, layer_name=None):
+    def run_relevances(self, image, num_filters):
         sess = tf.Session(config=self.sess_config)
         self.init_fn(sess)
         relevances = sess.run(self.relevances, feed_dict={self.input_image: image})
@@ -166,7 +166,7 @@ class Taylor:
                 cv2.imwrite(filepath, img)
                 #filepaths.append(filepath)
 
-                sorted_filters = sorted_filters[:10]
+                sorted_filters = sorted_filters[:num_filters]
                 #filter_rankings[str(self.relevances[r].name)] = sorted_filters
                 results[str(self.relevances[r].name)] = {'image_path': filepath, 'filter_rankings': sorted_filters}
         return results
