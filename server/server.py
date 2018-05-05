@@ -32,9 +32,9 @@ def activations():
 
 @app.route('/deep_taylor', methods=['POST'])
 def deep_taylor():
-    init_fn = init_network(network_name, 'predict')
-    net = Network(network_name, init_fn)
-    results = net.get_deep_taylor(uploaded_image)
+    init_pred_net()
+    num_filters = int(json.loads(request.data)['num_filters'])
+    results = pred_net.get_deep_taylor(uploaded_image, num_filters)
     return json.dumps({'results': results})
 
 @app.route('/upload_image', methods=['POST'])
@@ -54,8 +54,6 @@ def upload_image():
 
 @app.route("/predict", methods=['GET'])
 def predict():
-    if upload_image is None:
-        return json.dumps({'status': 'no image'})
     init_pred_net()
     prediction = pred_net.predict(uploaded_image, 5, False) #TODO replace 5 with number from call
     return json.dumps(prediction)
