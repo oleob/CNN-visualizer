@@ -77,13 +77,12 @@ class Network:
     def get_layer_names(self):
         return self.layer_names(self.output_layer)
 
-    def get_layer_activations(self, image, layer_name):
+    def get_layer_activations(self, image, layer_name, num_activations):
         #load image
         sess = tf.Session(config=self.sess_config)
         self.init_fn(sess)
         #Get the tensor by name
         tensor = sess.graph.get_tensor_by_name(layer_name)
-        print([inp for inp in tensor.op.inputs])
 
         units = sess.run(tensor,feed_dict={self.input_image: image})
         #format the filters
@@ -98,7 +97,7 @@ class Network:
             sorted_filters.append((fi.sum(),i,fi))
         sorted_filters = sorted(sorted_filters, reverse=True, key=lambda tup: tup[0])
         result = {}
-        for i in range(10):
+        for i in range(np.minimum(num_activations, len(sorted_filters))):
             filter_tuple = sorted_filters[i]
             activation = filter_tuple[2]/filter_tuple[2].max()
             height, width, channels = [224,224,3]
@@ -106,7 +105,8 @@ class Network:
             newImg = activation*255
             filepath = 'static/images/temp/'+ str(uuid.uuid4()) + '.jpg'
             cv2.imwrite(filepath, newImg)
-            result[str(filter_tuple[1])] = {'image_path': filepath}
+            result[str(i)] = {'image_path': filepath, 'id': filter_tuple[1]}
+            print(result)
         return result
 
     def visualize(self, opt):
