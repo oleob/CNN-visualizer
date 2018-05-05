@@ -71,8 +71,8 @@ class Network:
             parent = [inp for inp in parent.op.inputs if not (inp.op.type=='Const')][0]
         return parent
 
-    def get_deep_taylor(self, image):
-        return self.taylor.run_relevances(image)
+    def get_deep_taylor(self, image, num_filters):
+        return self.taylor.run_relevances(image, num_filters)
 
     def get_layer_names(self):
         return self.layer_names(self.output_layer)
