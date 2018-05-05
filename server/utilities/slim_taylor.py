@@ -168,5 +168,5 @@ class Taylor:
 
                 sorted_filters = sorted_filters[:num_filters]
                 #filter_rankings[str(self.relevances[r].name)] = sorted_filters
-                results[str(self.relevances[r].name)] = {'image_path': filepath, 'filter_rankings': sorted_filters}
+                results[str(self.relevances[r].name.split('/')[-2])] = {'image_path': filepath, 'filter_rankings': sorted_filters}
         return results
