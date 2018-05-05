@@ -9,6 +9,7 @@ import { FormControl } from 'material-ui/Form';
 import { InputLabel } from 'material-ui/Input';
 import Button from 'material-ui/Button';
 import { CircularProgress } from 'material-ui/Progress';
+import TextField from 'material-ui/TextField';
 
 import ActivationDisplay from './ActivationDisplay';
 
@@ -35,7 +36,8 @@ class ActivationSettings extends Component {
     layerNames: [],
     selectedLayer: '',
     loading: false,
-    result: {}
+    result: {},
+    numActivations: 10,
   }
 
   componentDidMount() {
@@ -46,13 +48,14 @@ class ActivationSettings extends Component {
     })
   }
 
-  handleChange = event => {
-   this.setState({ [event.target.name]: event.target.value });
+  handleChange = name => event => {
+   this.setState({ [name]: event.target.value });
   };
 
   getActivations = () => {
     const body = {
       layer_name: this.state.selectedLayer,
+      num_activations: this.state.numActivations,
     };
     this.setState({
       loading: true,
@@ -66,7 +69,6 @@ class ActivationSettings extends Component {
   }
 
   render() {
-    console.log(this.state)
     const { classes } = this.props;
     return(
       <div className={classes.container}>
@@ -77,7 +79,7 @@ class ActivationSettings extends Component {
           <form autoComplete="off">
             <FormControl className={classes.formControl}>
               <InputLabel htmlFor="controlled-open-select">Layer Name</InputLabel>
-              <Select value={this.state.selectedLayer} onChange={this.handleChange} inputProps={{ name: 'selectedLayer', id: 'controlled-open-select',}}>
+              <Select value={this.state.selectedLayer} onChange={this.handleChange("selectedLayer")} inputProps={{ name: 'selectedLayer', id: 'controlled-open-select',}}>
                 {
                   this.state.layerNames.map((name, i) => (
                     <MenuItem key={i} value={name.id}>{name.name}</MenuItem>
@@ -86,6 +88,18 @@ class ActivationSettings extends Component {
               </Select>
             </FormControl>
           </form>
+          <TextField
+            id="number"
+            label="Number of activations"
+            value={this.state.numActivations}
+            onChange={this.handleChange('numActivations')}
+            type="number"
+            className={classes.textField}
+            InputLabelProps={{
+              shrink: true,
+            }}
+            margin="normal"
+          />
           <div className={classes.buttonContainer}>
             {!this.state.loading &&
               <Button className={classes.saveButton} disabled={(this.state.selectedLayer==='')} onClick={this.getActivations} variant="raised">
