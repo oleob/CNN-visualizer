@@ -7,6 +7,8 @@ import TextField from 'material-ui/TextField';
 import Button from 'material-ui/Button';
 import { CircularProgress } from 'material-ui/Progress';
 
+import DeepTaylorDisplay from './DeepTaylorDisplay';
+
 const styles = {
   paper: {
     display: 'inline-block',
@@ -30,6 +32,14 @@ class DeepTaylorSettings extends Component {
     loading: false,
     numFilters: 10,
     result: {},
+  }
+
+  componentDidMount() {
+    this.setState(this.props.localState)
+  }
+
+  componentWillUnmount() {
+    this.props.updateState(this.state)
   }
 
   handleChange = name => event => {
@@ -63,7 +73,7 @@ class DeepTaylorSettings extends Component {
           <form autoComplete="off">
             <TextField
               id="number"
-              label="Number"
+              label="Number of ranked filters"
               value={this.state.numFilters}
               onChange={this.handleChange('numFilters')}
               type="number"
@@ -85,6 +95,7 @@ class DeepTaylorSettings extends Component {
             }
           </div>
         </Paper>
+        <DeepTaylorDisplay result={this.state.result}/>
       </div>
     )
   }
