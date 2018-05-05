@@ -8,6 +8,7 @@ import Home from './subContainers/Home';
 import Predict from './subContainers/Predict';
 import Visualize from './subContainers/Visualize';
 import Activations from './subContainers/Activations';
+import DeepTaylor from './subContainers/DeepTaylor';
 
 import { getRequest } from '../utilities/apiCalls';
 
@@ -28,6 +29,9 @@ class Content extends Component {
 
     },
     activations: {
+
+    },
+    deepTaylor: {
 
     }
   }
@@ -82,6 +86,13 @@ class Content extends Component {
           updateState={this.updateState}
           globalState={this.state.global}
           localState={this.state.activations} />)}
+        />
+        <Route path="/deep_taylor"
+        render={() => (<DeepTaylor
+          name="deepTaylor"
+          updateState={this.updateState}
+          globalState={this.state.global}
+          localState={this.state.deepTaylor} />)}
         />
       </Switch>
     );
