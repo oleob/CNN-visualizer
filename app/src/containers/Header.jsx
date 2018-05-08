@@ -14,8 +14,9 @@ const HomeLink = props => <Link to="/" style={{ textDecoration: 'none' }} {...pr
 const PredictLink = props => <Link to="/predict" style={{ textDecoration: 'none' }} {...props}/>
 const VisualizeLink = props => <Link to="/visualize" style={{ textDecoration: 'none' }} {...props}/>
 const ActivationsLink = props => <Link to="/activations" style={{ textDecoration: 'none' }} {...props}/>
+const DeepTaylorLink = props => <Link to="/deep_taylor" style={{ textDecoration: 'none' }} {...props}/>
 
-const links = ['/', '/predict', '/visualize', '/activations'];
+const links = ['/', '/predict', '/visualize', '/activations', '/deep_taylor'];
 
 const styles = {
   root: {
@@ -67,10 +68,11 @@ class Header extends Component {
                 <Tab label="Predict" component={PredictLink} />
                 <Tab label="Visualize" component={VisualizeLink} />
                 <Tab label="Activations" component={ActivationsLink} />
+                <Tab label="Deep Taylor Decomposition" component={DeepTaylorLink} />
               </Tabs>
             </Toolbar>
           </AppBar>
-          <SettingsDrawer toggleDrawer={this.toggleDrawer} showDrawer={this.state.showDrawer} />
+          <SettingsDrawer globalState={this.props.globalState} updateGlobalState={this.props.updateGlobalState} toggleDrawer={this.toggleDrawer} showDrawer={this.state.showDrawer} />
         </div>
       </div>
     );

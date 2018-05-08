@@ -8,9 +8,10 @@ from utilities.slim_taylor import Taylor
 import utilities.traverse as traverse
 from utilities.preprocess import pad_image
 from utilities.layer_names import inception_names, vgg_16_names
+import utilities.feature_vis.visualize as vis
 
 class Network:
-    def __init__(self, network_name, input_layer, probabilities, init_fn):
+    def __init__(self, network_name, init_fn):
 
         if network_name == 'InceptionV1':
             shift_index = False
@@ -25,8 +26,8 @@ class Network:
 
         self.init_fn = init_fn
         self.sess_config = tf.ConfigProto(device_count = {'GPU': 0})
-        self.input_image = input_layer
-        self.output_layer = probabilities
+        self.input_image = tf.get_default_graph().get_tensor_by_name('input_layer:0')
+        self.output_layer = tf.get_default_graph().get_tensor_by_name('probabilities:0')
         self.traverse_graph = traverse_graph
         self.shift_index = shift_index
         self.imagenet_labels = imagenet.create_readable_names_for_imagenet_labels()
@@ -70,23 +71,21 @@ class Network:
             parent = [inp for inp in parent.op.inputs if not (inp.op.type=='Const')][0]
         return parent
 
-    def get_deep_taylor(self):
-        return self.taylor.run_relevances()
+    def get_deep_taylor(self, image, num_filters):
+        return self.taylor.run_relevances(image, num_filters)
 
     def get_layer_names(self):
-        return self.layer_names
+        return self.layer_names(self.output_layer)
 
-    def get_layer_activations(self, layer_name):
+    def get_layer_activations(self, image, layer_name, num_activations, overlay):
         #load image
-        img = cv2.imread('./static/images/penguins3.jpg',1)
         sess = tf.Session(config=self.sess_config)
         self.init_fn(sess)
         #Get the tensor by name
         tensor = sess.graph.get_tensor_by_name(layer_name)
-        print([inp for inp in tensor.op.inputs])
-
-        img, units = sess.run([self.processed_image, tensor],feed_dict={self.input_image: img})
-        img = 255*(img + 1.0)/2.0
+        processed_image = sess.graph.get_tensor_by_name('ExpandDims:0')
+        img, units = sess.run([processed_image, tensor],feed_dict={self.input_image: image})
+        img = img[0]
         #format the filters
         filters = units[0,:,:,:]
         filter_size = units.shape[3]
@@ -98,21 +97,31 @@ class Network:
             fi = filters[:,:,i]
             sorted_filters.append((fi.sum(),i,fi))
         sorted_filters = sorted(sorted_filters, reverse=True, key=lambda tup: tup[0])
-        filepaths = []
-        for i in range(10):
+        result = {}
+        for i in range(np.minimum(num_activations, len(sorted_filters))):
+            height, width, channels = img.shape
             filter_tuple = sorted_filters[i]
             activation = filter_tuple[2]/filter_tuple[2].max()
-            height, width, channels = img.shape
             activation = cv2.resize(activation,(width, height), interpolation=0)
-            r,g,b = cv2.split(img)
-            r = r*activation
-            g = g*activation
-            b = b*activation
-            newImg = cv2.merge((r,g,b))
-
-
-            #filepath = 'static/images/temp/'+ str(uuid.uuid4()) + '.jpg'
-            filepath = 'static/images/temp/' + str(filter_tuple[1]) + '__' + str(filter_tuple[0]) + '.jpg'
+            if overlay:
+                r,g,b = cv2.split(img)
+                r = r*activation
+                g = g*activation
+                b = b*activation
+                newImg = cv2.merge((r,g,b))
+            else:
+                newImg = activation*255
+            filepath = 'static/images/temp/'+ str(uuid.uuid4()) + '.jpg'
             cv2.imwrite(filepath, newImg)
-            filepaths.append(filepath)
+            result[str(i)] = {'image_path': filepath, 'id': filter_tuple[1]}
+            print(result)
+        return result
+
+
+class VisNetwork:
+    def __init__(self, init_fn):
+        self.init_fn = init_fn
+
+    def visualize(self, opt, steps, lr, naive):
+        filepaths = vis.visualize_features(opt, self.init_fn, steps=steps, lr=lr, save_run=False, naive=naive)
         return filepaths

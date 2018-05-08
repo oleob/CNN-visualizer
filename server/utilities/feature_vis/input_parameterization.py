@@ -11,6 +11,7 @@ from preprocessing import vgg_preprocessing
 
 
 # TODO: in case of deepdream, convert the rgb image into the fourier space first
+# TODO: there is a bug when using different dimension-sizes ..fix it
 def fft_img(x_dim=200, y_dim=200):
     # input_array = misc.random_noise_img(batch_size, x_dim, y_dim)
     # #input_shape = [batch_size, 3, x_dim, y_dim]
@@ -44,12 +45,11 @@ def fft_img(x_dim=200, y_dim=200):
     img = tf.spectral.irfft2d(scaled_spectrum)
     img = img[:3, :y_dim, :x_dim]
     img = tf.transpose(img, [1, 2, 0])
-    # imgs = tf.expand_dims(img, 0)
 
     # create a tensor of the list of image-tensors
     # TODO: why divide by 4? ..found the reason somewhere
-    # fft_tensor = tf.stack(imgs) / 4.0
     fft_tensor = img / 4.0
+
 
     # decorrelate the colors
     # TODO: understand the following color-decorrelation a bit better, the following is just for imagenet
@@ -62,12 +62,10 @@ def fft_img(x_dim=200, y_dim=200):
     flat = tf.matmul(flat, color_correlation_normalized.T)
     rgb = tf.reshape(flat, tf.shape(fft_tensor))
 
+    rgb = tf.transpose(rgb, [1, 0, 2])
+
     # sigmoid the tensor
     rgb = tf.nn.sigmoid(rgb[..., :3])
-
-    # forget height and width of the input
-    # zero = tf.identity(0)
-    # rgb = rgb[:, zero:, zero:, :]
 
     # name the image-tensor so we can eval() it and see the results during optimization
     rgb = tf.identity(rgb, name='image')

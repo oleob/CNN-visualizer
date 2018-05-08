@@ -1,23 +1,25 @@
 import React, { Component } from 'react';
 
-import ActivationSettings from '../../components/ActivationSettings';
+import DeepTaylorSettings from '../../components/DeepTaylorSettings';
 
-class Activations extends Component {
+class DeepTaylor extends Component {
+
   updateState = (newState) => {
     this.props.updateState(this.props.name, newState);
   }
 
   render() {
     return(
-      <div className='content'>
-        <ActivationSettings
+      <div className="content">
+        <DeepTaylorSettings
           localState={this.props.localState}
           globalState={this.props.globalState}
           updateState={this.updateState}
-          updateGlobalState={this.props.updateGlobalState} />
+          updateGlobalState={this.props.updateGlobalState}
+        />
       </div>
-    );
+    )
   }
 }
 
-export default Activations;
+export default DeepTaylor;

@@ -3,14 +3,17 @@ import { withStyles } from 'material-ui/styles';
 import Button from 'material-ui/Button';
 import { CircularProgress } from 'material-ui/Progress';
 
-import {postRequest} from '../utilities/apiCalls';
+import {getRequest, postRequest} from '../utilities/apiCalls';
 import Scoreboard from './Scoreboard';
 
 const styles={
   imageForm: {
+    marginTop: 20,
+    overflow:'hidden',
   },
   button: {
-    marginTop: 20,
+    marginTop: 5,
+    marginBottom: 5,
     display: 'inline-block',
     minWidth: 0,
   },
@@ -19,24 +22,32 @@ const styles={
     textAlign: 'center',
   },
   scoreboardContainer: {
+    marginTop: 5,
     display: 'block',
     textAlign: 'center',
-  }
+  },
+  previewImage: {
+    maxHeight: 400,
+    maxWidth: 400,
+  },
 };
 
 class ImageForm extends Component {
-  constructor(props) {
-    super(props)
 
-    this.state={
-      results: [],
-      loading: false,
-    }
-
-    this.uploadFile = this.uploadFile.bind(this);
+  state={
+    results: [],
+    loading: false,
   }
 
-  uploadFile(event) {
+  componentDidMount() {
+    this.setState(this.props.localState)
+  }
+
+  componentWillUnmount() {
+    this.props.updateState(this.state)
+  }
+
+  uploadFile = event => {
       let file = event.target.files[0];
       if (file) {
         let data = new FormData();
@@ -45,19 +56,36 @@ class ImageForm extends Component {
           loading: true,
           results: [],
         });
-        postRequest('/predict', data).then((results)=>{
-          this.setState({
-            results,
-            loading: false,
-          })
-        })
+        postRequest('/upload_image', data).then((res) => {
+          if (res.status==='ok'){
+            this.setState({
+              loading: false,
+            });
+            this.props.updateGlobalState({imagePath: res.image_path})
+          }
+        });
       }
+  }
+
+  predict = () => {
+    this.setState({loading: true})
+    getRequest('predict').then((results) => {
+      this.setState({
+        results,
+        loading: false,
+      });
+    });
   }
 
   render() {
     const {classes} = this.props;
     return (
       <div className={classes.imageForm}>
+        {(this.props.globalState.imagePath !== '') &&
+          <div className={classes.buttonContainer}>
+            <img alt="current" className={classes.previewImage} src={this.props.globalState.imagePath}/>
+          </div>
+        }
         <input accept="image/*" id="raised-button-file" onChange={this.uploadFile} type="file" style={{"display" : "none"}}/>
         <div className={classes.buttonContainer}>
           <label className={classes.button} htmlFor="raised-button-file">
@@ -68,6 +96,13 @@ class ImageForm extends Component {
             }
             {this.state.loading && <CircularProgress size={68} />}
           </label>
+          <div className={classes.buttonContainer}>
+            {!this.state.loading &&
+              <Button className={classes.button} variant="raised"  onClick={this.predict} >
+                Predict
+              </Button>
+            }
+          </div>
         </div>
         <div className={classes.scoreboardContainer}>
           <Scoreboard results={this.state.results} />
