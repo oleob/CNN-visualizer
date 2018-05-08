@@ -77,14 +77,15 @@ class Network:
     def get_layer_names(self):
         return self.layer_names(self.output_layer)
 
-    def get_layer_activations(self, image, layer_name, num_activations):
+    def get_layer_activations(self, image, layer_name, num_activations, overlay):
         #load image
         sess = tf.Session(config=self.sess_config)
         self.init_fn(sess)
         #Get the tensor by name
         tensor = sess.graph.get_tensor_by_name(layer_name)
-
-        units = sess.run(tensor,feed_dict={self.input_image: image})
+        processed_image = sess.graph.get_tensor_by_name('ExpandDims:0')
+        img, units = sess.run([processed_image, tensor],feed_dict={self.input_image: image})
+        img = img[0]
         #format the filters
         filters = units[0,:,:,:]
         filter_size = units.shape[3]
@@ -98,11 +99,18 @@ class Network:
         sorted_filters = sorted(sorted_filters, reverse=True, key=lambda tup: tup[0])
         result = {}
         for i in range(np.minimum(num_activations, len(sorted_filters))):
+            height, width, channels = img.shape
             filter_tuple = sorted_filters[i]
             activation = filter_tuple[2]/filter_tuple[2].max()
-            height, width, channels = [224,224,3]
             activation = cv2.resize(activation,(width, height), interpolation=0)
-            newImg = activation*255
+            if overlay:
+                r,g,b = cv2.split(img)
+                r = r*activation
+                g = g*activation
+                b = b*activation
+                newImg = cv2.merge((r,g,b))
+            else:
+                newImg = activation*255
             filepath = 'static/images/temp/'+ str(uuid.uuid4()) + '.jpg'
             cv2.imwrite(filepath, newImg)
             result[str(i)] = {'image_path': filepath, 'id': filter_tuple[1]}
