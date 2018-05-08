@@ -48,19 +48,31 @@ def init_network(network_name, network_type, naive=False, x_dim=-1, y_dim=-1, pa
         input_layer = graph_builder.build(x_dim, y_dim, pad=pad, jitter=jitter, rotate=rotate, scale=scale, naive=naive)
         input_layer = tf.identity(input_layer, name='input_layer')
         if network_name=='InceptionV1':
-            lower, upper = (0, 1)
+            # preprocess for inceptionV1
+            lower, upper = (-1, 1)
             input_graph = lower + input_layer * (upper - lower)
-            input_graph = tf.subtract(input_graph, 0.5)
-            input_graph = tf.multiply(input_graph, 2.0)
         elif network_name=='vgg_16':
-            # TODO: find correct preprocessing steps for vgg_16
-            input_graph = preprocessor(input_layer, x_dim, y_dim, is_training=False)
+            # preprocess for vgg_16
+            lower, upper = (0, 255)
+            input_graph = lower + input_layer * (upper - lower)
+            channels = tf.split(axis=2, num_or_size_splits=3, value=input_graph)
+            channels[0] -= 123.68 # R_MEAN
+            channels[1] -= 116.78 # G_MEAN
+            channels[2] -= 103.94 # B_MEAN
+            input_graph = tf.concat(axis=2, values=channels)
         input_graph = tf.expand_dims(input_graph, 0)
         input_graph = tf.identity(input_graph, name='test')
     else:
         raise Exception('Unkown network type: ' + network_type)
     with slim.arg_scope(scope()):
-        logits, _ = net(input_graph, num_classes=num_classes, is_training=False)
+        if network_type=='visualize':
+            if network_name=='InceptionV1':
+                logits, _ = net(input_graph, num_classes=num_classes, is_training=False, spatial_squeeze=False, global_pool=True)
+            elif network_name=='vgg_16':
+                logits, _ = net(input_graph, num_classes=num_classes, is_training=False, spatial_squeeze=False,
+                                global_pool=True, fc_conv_padding = 'SAME')
+        else:
+            logits, _ = net(input_graph, num_classes=num_classes, is_training=False)
         probabilities = tf.nn.softmax(logits, name='probabilities')
         init_fn = slim.assign_from_checkpoint_fn(os.path.join(checkpoints_dir, '{0}.ckpt'.format(network_name)), slim.get_model_variables(network_name))
 

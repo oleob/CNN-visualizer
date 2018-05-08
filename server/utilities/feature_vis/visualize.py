@@ -15,7 +15,7 @@ import utilities.feature_vis.misc as misc
 
 
 
-def visualize_features(opt, init_fn, steps=200, lr=0.06, optimizer=None, dream_img=None, naive=False, save_run=False):
+def visualize_features(opt, init_fn, steps=200, lr=0.06, optimizer=None, naive=False, save_run=False):
 
     num_visualizations = 1
     mix = False
@@ -41,7 +41,6 @@ def visualize_features(opt, init_fn, steps=200, lr=0.06, optimizer=None, dream_i
         test_tensor = graph.get_tensor_by_name('test:0')
 
         # create the optimizer to the graph
-        if dream_img is not None or naive is True: lr = 3
         optimizer = optimizer or tf.train.AdamOptimizer(learning_rate=lr)
 
         # tensorboard stuff ..uncomment to take a look at the graph
@@ -81,7 +80,8 @@ def visualize_features(opt, init_fn, steps=200, lr=0.06, optimizer=None, dream_i
             temp_var = input_var + optimizer_var + optimizer_slots
             sess.run(tf.initialize_variables(temp_var))
 
-            # sess.run(tf.global_variables_initializer())
+            #TODO: why isnt the naive option training??
+            #sess.run(tf.global_variables_initializer())
 
             for i in range(steps):
                 print("vis #", n, "\tstep:", i)
@@ -89,8 +89,7 @@ def visualize_features(opt, init_fn, steps=200, lr=0.06, optimizer=None, dream_i
                 # save the current optimized image (for testing purposes and cool animations)
                 if save_run:
                     img = image_tensor.eval()
-                    print(i, '\t', img[100][100][0], img[100][100][1], img[100][100][2])
-                    if dream_img is None and naive is False:
+                    if naive is False:
                         misc.save_image(img, 'static/images/temp/' + 'img' + str(i) + '.jpg')
                     else:
                         misc.save_image_naive(img, 'static/images/temp/' + 'img' + str(i) + '.jpg')
@@ -100,7 +99,10 @@ def visualize_features(opt, init_fn, steps=200, lr=0.06, optimizer=None, dream_i
 
             img = image_tensor.eval()
             filepath = 'static/images/temp/' + 'img' + str(uuid.uuid4()) + '.jpg'
-            misc.save_image(img, filepath)
+            if naive is False:
+                misc.save_image(img, filepath)
+            else:
+                misc.save_image_naive(img, filepath)
             filepaths.append(filepath)
 
         duration = time.time() - start_time

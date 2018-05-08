@@ -4,7 +4,7 @@ import json
 import io
 import uuid
 from flask import Flask, render_template, request, make_response, Response
-from utilities.slim_network import Network
+from utilities.slim_network import Network, VisNetwork
 from utilities.cleaner import clear_temp_folder
 from utilities.network_initializer import init_network
 
@@ -74,20 +74,37 @@ def layer_names():
 
 @app.route('/visualize', methods=['POST'])
 def visualize():
+
+    print(request.data)
+
     layer_name = json.loads(request.data)['layer_name']
-    channel = json.loads(request.data)['channel']
+    channel = int(json.loads(request.data)['channel'])
     opt = (layer_name, channel)
 
-    # parameters which can be used in the random transformation-graph
-    pad = 16  # 16
-    jitter = 8  # 8
-    angles = list(range(-5, 5))  # (-5, 5)
+    dim = int(json.loads(request.data)['dim'])
+
+    # TODO: find a way to pad only the minimal required amount
+    pad = int(json.loads(request.data)['pad'])
+    jitter = int(json.loads(request.data)['jitter'])
+    angle = int(json.loads(request.data)['rotation'])
+    angles = list(range(-angle, angle)) or None
     scales = np.arange(0.95, 1.1, 0.02, dtype='float32')  # (0.9, 1.1, 0.1)
 
-    init_fn = init_network(network_name, 'visualize', pad=pad, jitter=jitter, rotate=angles, scale=scales, naive=False)
-    net = Network(network_name, init_fn)
-    filepaths = net.visualize(opt)
-    return json.dumps(filepaths)
+    param_space = json.loads(request.data)['param_space']
+    naive = True if param_space == 'naive' else False
+
+    init_fn = init_network(network_name, 'visualize', x_dim=dim, y_dim=dim, pad=pad, jitter=jitter, rotate=angles, scale=None, naive=naive)
+    net = VisNetwork(init_fn)
+
+    # opt = []
+    # for i in range(120, 132):
+    #     opt.append(("InceptionV1/InceptionV1/Mixed_4c/concat:0", i))
+
+    steps = int(json.loads(request.data)['steps'])
+    lr = float(json.loads(request.data)['lr'])
+
+    filepaths = net.visualize(opt, steps=steps, lr=lr, naive=naive)
+    return json.dumps({'filepaths': filepaths})
 
 @app.route('/current_settings', methods=['GET'])
 def current_settings():
