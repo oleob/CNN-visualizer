@@ -41,11 +41,16 @@ class ActivationSettings extends Component {
   }
 
   componentDidMount() {
+    this.setState(this.props.localState)
     getRequest('/layer_names').then((res) => {
       this.setState({
         layerNames: res.names,
       });
     })
+  }
+
+  componentWillUnmount() {
+    this.props.updateState(this.state)
   }
 
   handleChange = name => event => {
