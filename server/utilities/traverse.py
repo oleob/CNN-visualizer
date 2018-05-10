@@ -2,7 +2,7 @@ import tensorflow as tf
 
 def inception_v1(self, layer, relevances):
     while not ('ExpandDims' in layer.name):
-        with tf.variable_scope(layer.op.name.split('/')[-2] + '_t'):
+        with tf.variable_scope(layer.op.name.split('/')[-2] + '_taylor'):
             #if squeeze skip to next node
             if 'SpatialSqueeze' in layer.name:
                 layer = self.get_parent(layer, 1)
@@ -54,7 +54,7 @@ def inception_v1(self, layer, relevances):
 
 def vgg_16 (self, layer, relevances):
     while not ('ExpandDims' in layer.name):
-        with tf.variable_scope(layer.op.name.split('/')[-2] + '_t'):
+        with tf.variable_scope(layer.op.name.split('/')[-2] + '_taylor'):
             if 'squeezed' in layer.name:
                 layer = self.get_parent(layer, 1)
             elif 'BiasAdd' in layer.name:
