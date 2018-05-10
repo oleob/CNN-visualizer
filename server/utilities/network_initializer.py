@@ -44,6 +44,12 @@ def init_network(network_name, network_type, naive=False, x_dim=-1, y_dim=-1, pa
         input_graph = tf.convert_to_tensor(input_layer, dtype=tf.uint8)
         input_graph = preprocessor(input_graph, x_dim, y_dim, is_training = False)
         input_graph = tf.expand_dims(input_graph, 0)
+    elif network_type=='predict_multiple':
+        input_layer = tf.placeholder(tf.float32, shape=(None, None, None, 3))
+        input_layer = tf.identity(input_layer, name='input_layer')
+        lower, upper = (-1, 1)
+        input_graph = lower + input_layer * (upper - lower)
+        input_graph = tf.convert_to_tensor(input_graph, dtype=tf.float32)
     elif network_type=='visualize':
         input_layer = graph_builder.build(x_dim, y_dim, pad=pad, jitter=jitter, rotate=rotate, scale=scale, naive=naive)
         input_layer = tf.identity(input_layer, name='input_layer')
@@ -72,7 +78,11 @@ def init_network(network_name, network_type, naive=False, x_dim=-1, y_dim=-1, pa
                 logits, _ = net(input_graph, num_classes=num_classes, is_training=False, spatial_squeeze=False,
                                 global_pool=True, fc_conv_padding = 'SAME')
         else:
-            logits, _ = net(input_graph, num_classes=num_classes, is_training=False)
+            if network_type=='predict_multiple':
+                logits, _ = net(input_graph, num_classes=num_classes, is_training=False, spatial_squeeze=False,
+                                global_pool=True)
+            else:
+                logits, _ = net(input_graph, num_classes=num_classes, is_training=False)
         probabilities = tf.nn.softmax(logits, name='probabilities')
         init_fn = slim.assign_from_checkpoint_fn(os.path.join(checkpoints_dir, '{0}.ckpt'.format(network_name)), slim.get_model_variables(network_name))
 

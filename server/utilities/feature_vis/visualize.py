@@ -32,8 +32,8 @@ def visualize_features(opt, init_fn, steps=200, lr=0.06, optimizer=None, naive=F
 
         graph = tf.get_default_graph()
 
-        for op in graph.get_operations():
-            print(op.name)
+        # for op in graph.get_operations():
+        #     print(op.name)
 
         # select tensors that we might want to access later
         image_tensor = graph.get_tensor_by_name('image:0')

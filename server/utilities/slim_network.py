@@ -11,7 +11,7 @@ from utilities.layer_names import inception_names, vgg_16_names
 import utilities.feature_vis.visualize as vis
 
 class Network:
-    def __init__(self, network_name, init_fn):
+    def __init__(self, network_name, init_fn, taylor=True):
 
         if network_name == 'InceptionV1':
             shift_index = False
@@ -33,7 +33,6 @@ class Network:
         self.imagenet_labels = imagenet.create_readable_names_for_imagenet_labels()
         self.layer_names = layer_names
         self.taylor = Taylor(self.input_image, self.init_fn, self.sess_config, self.traverse_graph, self.output_layer)
-        self.print_layers()
 
     def predict(self, img, num_items, pad_image):
         if pad_image:
@@ -57,6 +56,19 @@ class Network:
             item['value'] = round(float(probabilities[index]), 4)
             results.append(item)
         return results
+
+    def predict_multiple(self, images, layer_name, channel):
+
+        layer = tf.get_default_graph().get_tensor_by_name(layer_name)
+        channel = layer[:, :, :, channel]
+        activation_value = tf.reduce_mean(channel, axis=[1, 2])
+
+        sess = tf.Session()
+
+        self.init_fn(sess)
+        probabilities = sess.run(activation_value, feed_dict={self.input_image:images}).tolist()
+
+        return probabilities
 
     def print_layers(self):
         sess = tf.Session(config=self.sess_config)

@@ -4,6 +4,9 @@ import json
 import io
 import uuid
 import tensorflow as tf
+import os
+import time
+import operator
 from flask import Flask, render_template, request, make_response, Response
 from utilities.slim_network import Network, VisNetwork
 from utilities.cleaner import clear_temp_folder
@@ -21,6 +24,7 @@ def init_pred_net():
     if pred_net is None:
         init_fn = init_network(network_name, 'predict')
         pred_net = Network(network_name, init_fn)
+
 
 @app.route('/activations', methods=['POST'])
 def activations():
@@ -59,6 +63,42 @@ def predict():
     prediction = pred_net.predict(uploaded_image, 5, False) #TODO replace 5 with number from call
     return json.dumps(prediction)
 
+@app.route('/predict_multiple', methods=['POST'])
+def predict_multiple():
+
+    layer_name = json.loads(request.data)['layer_name']
+    channel = int(json.loads(request.data)['channel'])
+
+    images = []
+    init_fn = init_network(network_name, 'predict_multiple')
+    pred_net = Network(network_name, init_fn, False)
+    paths = []
+    print("loading imagenet..")
+    for subdir, dirs, files in os.walk('./static/valid_64x64'):
+        for file in files:
+            if file.endswith('.png'):
+                path = subdir + os.sep + file
+                paths.append(path)
+                image = cv2.imread(path, 1)
+                images.append(image)
+    print("..loading complete")
+    start_time = time.time()
+    batch_size = 1000
+    num_batches = 15  #int(50000/batch_size)
+    results = []
+    for i in range(num_batches):
+        batch = images[i * batch_size:(i + 1) * batch_size]
+        results = results + pred_net.predict_multiple(batch, layer_name, channel)
+        print("batch", i, "/", num_batches, "complete")
+    path_value = dict(zip(paths, results))
+    path_value_sorted = sorted(path_value.items(), key=operator.itemgetter(1))
+    path_value_sorted.reverse()
+    paths = [item[0] for item in path_value_sorted][:10]
+    duration = time.time() - start_time
+    print("prediction complete\ttime:", duration)
+
+    return json.dumps({'filepaths': paths})
+
 @app.route('/change_settings', methods=['POST'])
 def change_settings():
     global network_name
@@ -78,8 +118,21 @@ def visualize():
     print(request.data)
 
     layer_name = json.loads(request.data)['layer_name']
-    channel = int(json.loads(request.data)['channel'])
-    opt = (layer_name, channel)
+    channel = json.loads(request.data)['channel']
+    mix = json.loads(request.data)['mix']
+
+    #create a list of objectives
+    if isinstance(channel, int):
+        channel_list = [channel]
+    else:
+        channel_list = channel.split(",")
+    opt_list = []
+    for ch in channel_list:
+        if mix:
+            opt = (layer_name, int(ch), 1)
+        else:
+            opt = (layer_name, int(ch))
+        opt_list.append(opt)
 
     dim = int(json.loads(request.data)['dim'])
 
@@ -96,14 +149,10 @@ def visualize():
     init_fn = init_network(network_name, 'visualize', x_dim=dim, y_dim=dim, pad=pad, jitter=jitter, rotate=angles, scale=None, naive=naive)
     net = VisNetwork(init_fn)
 
-    # opt = []
-    # for i in range(120, 132):
-    #     opt.append(("InceptionV1/InceptionV1/Mixed_4c/concat:0", i))
-
     steps = int(json.loads(request.data)['steps'])
     lr = float(json.loads(request.data)['lr'])
 
-    filepaths = net.visualize(opt, steps=steps, lr=lr, naive=naive)
+    filepaths = net.visualize(opt_list, steps=steps, lr=lr, naive=naive)
     return json.dumps({'filepaths': filepaths})
 
 @app.route('/current_settings', methods=['GET'])
