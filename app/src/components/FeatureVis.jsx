@@ -46,8 +46,12 @@ const styles = {
 
   },
   visButton: {
-    marginTop: 10
+    marginTop: 10,
+    marginRight: 20,
+  },
 
+  addButton: {
+    width: 30
   },
 
 };
@@ -70,10 +74,16 @@ class FeatureVis extends Component {
 
       param_space: 'fourier',
 
+      mix: false,
+
       loading: false,
+      loading_imagenet: false,
 
       all_layers: [],
+
+      imagenet_paths: [],
     };
+    this.mixFeature = this.mixFeature.bind(this);
   }
 
   componentDidMount() {
@@ -122,14 +132,48 @@ class FeatureVis extends Component {
       jitter: this.state.jitter,
       rotation: this.state.rotation,
 
-      param_space: this.state.param_space
+      param_space: this.state.param_space,
+
+      mix: this.state.mix,
     };
 
     postRequest('/visualize', body).then((res) => {
       console.log(res);
       this.setState({
         img_paths: res.filepaths,
-        loading: false
+        loading: false,
+        mix: false
+      })
+    })
+  };
+
+  mixFeature = (event) => {
+
+    this.setState({mix: true}, () => {this.visualizeFeature();});
+
+  };
+
+  getImagenetExamples = (event) => {
+
+    this.setState({loading_imagenet: true});
+
+    const api_key = 'dc6zaTOxFJmzC';
+    const url = `http://api.giphy.com/v1/gifs/search?q=${'kanye'}&api_key=${api_key}`;
+    let kanye_index = Math.floor(Math.random() * 24);
+    fetch(url)
+      .then(response => response.json())
+      .then(data => this.setState({ imagenet_paths: [data.data[kanye_index].images.fixed_height.url] }));
+
+    const body = {
+      layer_name: this.state.layer_name,
+      channel: this.state.channel,
+    };
+
+    postRequest('/predict_multiple', body).then((res) => {
+      console.log(res);
+      this.setState({
+        imagenet_paths: res.filepaths,
+        loading_imagenet: false
       })
     })
   };
@@ -153,8 +197,9 @@ class FeatureVis extends Component {
                   ))
                 }
                 </Select>
-                {/*<TextField className={classes.layerInput} label="Layer Name:" name="layer_name" value={this.state.layer_name} onChange={this.handleInputChange} />*/}
-                <TextField className={classes.paramInput} label="Channel:" name="channel" value={this.state.channel} onChange={this.handleInputChange} />
+                <TextField className={classes.paramInput} label="Channel(s):" name="channel" value={this.state.channel} onChange={this.handleInputChange} />
+                {/*<Button variant="raised" className={classes.addButton} onClick={this.visualizeFeature}>add</Button>*/}
+
               </span>
               <FormLabel component="legend" style={{marginBottom: 0, marginTop: 10}}>Input Parameterization:</FormLabel>
               <span>
@@ -181,14 +226,26 @@ class FeatureVis extends Component {
               </span>
             </FormControl>
           </form>
-          <Button variant="raised" className={classes.visButton} onClick={this.visualizeFeature}>Visualize !</Button>
+          <span>
+            <Button variant="raised" className={classes.visButton} onClick={this.visualizeFeature}>Visualize !</Button>
+            <Button variant="raised" className={classes.visButton} onClick={this.mixFeature}>Mix</Button>
+            <Button variant="raised" className={classes.visButton} onClick={this.getImagenetExamples}>find image examples</Button>
+          </span>
         </Paper>
-        <Paper className={classes.paperImage}>
-          {this.state.loading ? <h4>Visualizing, please wait.. <br />Todo: replace random cat gif with load bar</h4> : ''}
-          {this.state.img_paths.map((filepath, index)=>(
-              <img key={index} alt={this.state.layer} src={filepath} />
-          ))}
-        </Paper>
+        <div>
+          <Paper className={classes.paperImage}>
+            {this.state.loading ? <h4>Visualizing, please wait.. <br />Todo: replace random cat gif with load bar</h4> : ''}
+            {this.state.img_paths.map((filepath, index)=>(
+                <img key={index} alt={this.state.layer} src={filepath} />
+            ))}
+          </Paper>
+          <Paper className={classes.paperImage}>
+            {this.state.loading_imagenet ? <p>Finding examples, please wait.. <br />Todo: replace random kanye gif with load bar</p> : ''}
+            {this.state.imagenet_paths.map((filepath, index)=>(
+                <img key={index} alt={index} src={filepath} />
+            ))}
+          </Paper>
+        </div>
       </span>
     );
   }
