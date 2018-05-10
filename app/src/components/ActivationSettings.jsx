@@ -12,6 +12,7 @@ import { CircularProgress } from 'material-ui/Progress';
 import TextField from 'material-ui/TextField';
 
 import ActivationDisplay from './ActivationDisplay';
+import DisplayNetwork from './network/DisplayNetwork';
 
 const styles = {
   paper: {
@@ -33,8 +34,10 @@ const styles = {
 class ActivationSettings extends Component {
 
   state = {
-    layerNames: [],
-    selectedLayer: '',
+    layers: [],
+    selectedLayer: {
+      info: {},
+    },
     loading: false,
     result: {},
     numActivations: 10,
@@ -42,9 +45,9 @@ class ActivationSettings extends Component {
 
   componentDidMount() {
     this.setState(this.props.localState)
-    getRequest('/layer_names').then((res) => {
+    getRequest('/layer_info').then((res) => {
       this.setState({
-        layerNames: res.names,
+        layers: res.layers,
       });
     })
   }
@@ -53,13 +56,17 @@ class ActivationSettings extends Component {
     this.props.updateState(this.state)
   }
 
+  changeSelectedLayer = layer => {
+    this.setState({selectedLayer: layer})
+  }
+
   handleChange = name => event => {
    this.setState({ [name]: event.target.value });
   };
 
   getActivations = () => {
     const body = {
-      layer_name: this.state.selectedLayer,
+      layer_name: this.state.selectedLayer.output,
       num_activations: this.state.numActivations,
     };
     this.setState({
@@ -81,18 +88,7 @@ class ActivationSettings extends Component {
           <Typography variant="headline" component="h3">
             Settings
           </Typography>
-          <form autoComplete="off">
-            <FormControl className={classes.formControl}>
-              <InputLabel htmlFor="controlled-open-select">Layer Name</InputLabel>
-              <Select value={this.state.selectedLayer} onChange={this.handleChange("selectedLayer")} inputProps={{ name: 'selectedLayer', id: 'controlled-open-select',}}>
-                {
-                  this.state.layerNames.map((name, i) => (
-                    <MenuItem key={i} value={name.id}>{name.name}</MenuItem>
-                  ))
-                }
-              </Select>
-            </FormControl>
-          </form>
+          <DisplayNetwork layers={this.state.layers} selectedLayer={this.state.selectedLayer} changeSelectedLayer={this.changeSelectedLayer}/>
           <TextField
             id="number"
             label="Number of activations"
@@ -107,7 +103,7 @@ class ActivationSettings extends Component {
           />
           <div className={classes.buttonContainer}>
             {!this.state.loading &&
-              <Button className={classes.saveButton} disabled={(this.state.selectedLayer==='')} onClick={this.getActivations} variant="raised">
+              <Button className={classes.saveButton} disabled={(Object.keys(this.state.selectedLayer.info).length === 0)} onClick={this.getActivations} variant="raised">
                 Get Activations
               </Button>
             }
