@@ -121,17 +121,20 @@ def visualize():
     channel = json.loads(request.data)['channel']
     mix = json.loads(request.data)['mix']
 
-    #create a list of objectives
-    if isinstance(channel, int):
-        channel_list = [channel]
-    else:
+    if channel == '':
+        channel_list = [None]
+    elif "," in channel:
         channel_list = channel.split(",")
+        channel_list = [int(ch) for ch in channel_list]
+    else:
+        channel_list = [int(channel)]
+
     opt_list = []
     for ch in channel_list:
         if mix:
-            opt = (layer_name, int(ch), 1)
+            opt = (layer_name, ch, 1)
         else:
-            opt = (layer_name, int(ch))
+            opt = (layer_name, ch)
         opt_list.append(opt)
 
     dim = int(json.loads(request.data)['dim'])
@@ -151,6 +154,8 @@ def visualize():
 
     steps = int(json.loads(request.data)['steps'])
     lr = float(json.loads(request.data)['lr'])
+
+    print(opt_list)
 
     filepaths = net.visualize(opt_list, steps=steps, lr=lr, naive=naive)
     return json.dumps({'filepaths': filepaths})
