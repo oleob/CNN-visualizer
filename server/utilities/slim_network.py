@@ -33,6 +33,7 @@ class Network:
         self.imagenet_labels = imagenet.create_readable_names_for_imagenet_labels()
         self.layer_names = layer_names
         self.taylor = Taylor(self.input_image, self.init_fn, self.sess_config, self.traverse_graph, self.output_layer)
+        self.print_layers()
 
     def predict(self, img, num_items, pad_image):
         if pad_image:
@@ -52,7 +53,7 @@ class Network:
             index = sorted_inds[i]
 
             item = {}
-            item['name'] = self.imagenet_labels[index + shift]
+            item['name'] = self.imagenet_labels[index + shift] + ", " + str(index + shift)
             item['value'] = round(float(probabilities[index]), 4)
             results.append(item)
         return results
@@ -60,7 +61,7 @@ class Network:
     def print_layers(self):
         sess = tf.Session(config=self.sess_config)
         self.init_fn(sess)
-        layer = sess.graph.get_tensor_by_name('Softmax:0') #TODO replace with output_layer
+        layer = self.output_layer
         while not ('ExpandDims' in layer.name):
             print(layer.name, layer.shape)
             layer = self.get_parent(layer, 1)
@@ -82,7 +83,7 @@ class Network:
         sess = tf.Session(config=self.sess_config)
         self.init_fn(sess)
         #Get the tensor by name
-        tensor = sess.graph.get_tensor_by_name(layer_name)
+        tensor = sess.graph.get_tensor_by_name(layer_name + ':0')
         processed_image = sess.graph.get_tensor_by_name('ExpandDims:0')
         img, units = sess.run([processed_image, tensor],feed_dict={self.input_image: image})
         img = img[0]
@@ -114,7 +115,6 @@ class Network:
             filepath = 'static/images/temp/'+ str(uuid.uuid4()) + '.jpg'
             cv2.imwrite(filepath, newImg)
             result[str(i)] = {'image_path': filepath, 'id': filter_tuple[1]}
-            print(result)
         return result
 
 
