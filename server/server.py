@@ -73,19 +73,23 @@ def predict_multiple():
     init_fn = init_network(network_name, 'predict_multiple')
     pred_net = Network(network_name, init_fn, False)
     paths = []
-    for subdir, dirs, files in os.walk('./static/tiny_images'):
+    print("loading imagenet..")
+    for subdir, dirs, files in os.walk('./static/valid_64x64'):
         for file in files:
-            if file.endswith('.JPEG'):
+            if file.endswith('.png'):
                 path = subdir + os.sep + file
                 paths.append(path)
                 image = cv2.imread(path, 1)
                 images.append(image)
+    print("..loading complete")
     start_time = time.time()
     batch_size = 1000
+    num_batches = 15  #int(50000/batch_size)
     results = []
-    for i in range(10):
+    for i in range(num_batches):
         batch = images[i * batch_size:(i + 1) * batch_size]
         results = results + pred_net.predict_multiple(batch, layer_name, channel)
+        print("batch", i, "/", num_batches, "complete")
     path_value = dict(zip(paths, results))
     path_value_sorted = sorted(path_value.items(), key=operator.itemgetter(1))
     path_value_sorted.reverse()
@@ -118,7 +122,10 @@ def visualize():
     mix = json.loads(request.data)['mix']
 
     #create a list of objectives
-    channel_list = channel.split(",")
+    if isinstance(channel, int):
+        channel_list = [channel]
+    else:
+        channel_list = channel.split(",")
     opt_list = []
     for ch in channel_list:
         if mix:

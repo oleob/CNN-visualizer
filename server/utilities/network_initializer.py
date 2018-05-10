@@ -47,7 +47,9 @@ def init_network(network_name, network_type, naive=False, x_dim=-1, y_dim=-1, pa
     elif network_type=='predict_multiple':
         input_layer = tf.placeholder(tf.float32, shape=(None, None, None, 3))
         input_layer = tf.identity(input_layer, name='input_layer')
-        input_graph = tf.convert_to_tensor(input_layer, dtype=tf.float32)
+        lower, upper = (-1, 1)
+        input_graph = lower + input_layer * (upper - lower)
+        input_graph = tf.convert_to_tensor(input_graph, dtype=tf.float32)
     elif network_type=='visualize':
         input_layer = graph_builder.build(x_dim, y_dim, pad=pad, jitter=jitter, rotate=rotate, scale=scale, naive=naive)
         input_layer = tf.identity(input_layer, name='input_layer')
