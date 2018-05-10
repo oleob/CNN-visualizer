@@ -5,6 +5,7 @@ import Card, { CardActions, CardContent, CardMedia } from 'material-ui/Card';
 import { withStyles } from 'material-ui/styles';
 import Collapse from 'material-ui/transitions/Collapse';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import ContentCopy from '@material-ui/icons/ContentCopy';
 import IconButton from 'material-ui/IconButton';
 import classnames from 'classnames';
 
@@ -36,6 +37,21 @@ class DeepTaylorUnit extends Component {
     this.setState({ expanded: !this.state.expanded });
   };
 
+  copyIds = () => {
+    const ids = [];
+    this.props.filter_rankings.map((filter)=>{
+      ids.push(filter.id)
+    })
+
+  const dummy = document.createElement("input");
+  document.body.appendChild(dummy);
+  dummy.setAttribute("id", "dummy_id");
+  document.getElementById("dummy_id").value = ids.toString();
+  dummy.select();
+  document.execCommand("copy");
+  document.body.removeChild(dummy);
+}
+
   render() {
     const {classes} = this.props;
     return(
@@ -54,6 +70,9 @@ class DeepTaylorUnit extends Component {
         </Typography>
       </CardContent>
       <CardActions>
+        <IconButton aria-label="Copy Filter IDs" onClick={this.copyIds} variant="raised">
+          <ContentCopy />
+        </IconButton>
         <IconButton
           className={classnames(classes.expand, {
             [classes.expandOpen]: this.state.expanded,
