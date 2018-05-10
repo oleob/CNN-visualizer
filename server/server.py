@@ -3,11 +3,11 @@ import numpy as np
 import json
 import io
 import uuid
+import tensorflow as tf
 from flask import Flask, render_template, request, make_response, Response
 from utilities.slim_network import Network, VisNetwork
 from utilities.cleaner import clear_temp_folder
 from utilities.network_initializer import init_network
-
 
 clear_temp_folder()
 network_name = 'InceptionV1'
@@ -113,10 +113,73 @@ def current_settings():
     settings['network_name'] = network_name
     return json.dumps(settings)
 
-@app.route('/toast', methods=['GET'])
+@app.route('/layer_info', methods=['GET'])
 def toast():
-    net.get_gradients('mixed3b')
-    return 'hello'
+    init_pred_net()
+    ops = tf.get_default_graph().get_operations()
+    rel_ops = []
+    for op in ops:
+        if not ('_taylor' in op.name) and ('Conv2D' in op.name or 'Relu' in op.name or 'BiasAdd' in op.name or (str(op.name).endswith('concat') and len(op.name)>6) or 'Pool' in op.name):
+            rel_ops.append(op)
+    for o in rel_ops:
+        print(o.name)
+    layers = []
+    i = 0
+    def make_layer(op, i):
+        layer = {}
+        if 'Conv2D' in op.name:
+            j = 1
+            while i + j < len(rel_ops):
+                if 'Relu' in rel_ops[i+j].name or (i+j+1 == len(rel_ops)):
+                    layer['output'] = rel_ops[i+1].name
+                    break
+                else:
+                    j += 1
 
+            info = {}
+            info['name'] = op.name.split('/')[-2]
+            info['operation'] = 'Convolution'
+            info['padding'] = str(op.get_attr('padding'))
+            info['strides'] = str(op.get_attr('strides'))
+            info['filter_dimensions'] = str(op.inputs[1].shape)
+            info['shape'] = str(tf.get_default_graph().get_tensor_by_name(op.name + ':0').shape)
+
+            layer['info'] = info
+            increment = j + 1
+        elif 'Pool' in op.name:
+            layer['output'] = op.name
+            if 'MaxPool' in op.name:
+                layer['operation'] = 'Max Pool'
+            else:
+                layer['operation'] = 'Average Pool'
+
+            info = {}
+            info['name'] = op.name.split('/')[-2]
+            info['size'] = str(op.get_attr('ksize'))
+            info['strides'] = str(op.get_attr('strides'))
+            info['shape'] = str(tf.get_default_graph().get_tensor_by_name(op.name + ':0').shape)
+            layer['info'] = info
+            increment = 1
+        return layer, increment
+    children = []
+    while i < len(rel_ops):
+        op = rel_ops[i]
+        if 'concat' in op.name:
+            layer = {}
+            layer['output'] = op.name
+            layer['children'] = children
+            layer['info'] = {'name': op.name.split('/')[-2], 'operation': 'Inception'}
+            children = []
+            i += 1
+            layers.append(layer)
+        else:
+            layer, increment = make_layer(op, i)
+            if 'Mixed' in op.name:
+                children.append(layer)
+            else:
+                layers.append(layer)
+            i += increment
+
+    return(json.dumps({'layers': layers}))
 if __name__ == '__main__':
     app.run()
