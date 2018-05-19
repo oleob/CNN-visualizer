@@ -170,8 +170,6 @@ def toast():
     for op in ops:
         if not ('_taylor' in op.name) and ('Conv2D' in op.name or 'Relu' in op.name or 'BiasAdd' in op.name or (str(op.name).endswith('concat') and len(op.name)>6) or 'Pool' in op.name):
             rel_ops.append(op)
-    for o in rel_ops:
-        print(o.name)
     layers = []
     i = 0
     def make_layer(op, i):
