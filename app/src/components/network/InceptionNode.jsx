@@ -10,7 +10,7 @@ const styles = {
     flexWrap: 'wrap',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#77aa77',
+    backgroundColor: '#9673A6',
     borderRadius: 25,
     margin:10,
   },
