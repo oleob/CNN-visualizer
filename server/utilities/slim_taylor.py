@@ -11,7 +11,6 @@ class Taylor:
         self.epsilon = epsilon
 
         graph = tf.get_default_graph()
-        #output_layer = graph.get_tensor_by_name('Softmax:0')
         layer = output_layer.op.inputs[0]
         relevances = [output_layer]
         relevances = traverse_graph(self, layer, relevances)
