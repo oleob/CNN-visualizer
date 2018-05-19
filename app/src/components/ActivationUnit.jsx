@@ -4,10 +4,10 @@ import { withStyles } from 'material-ui/styles';
 
 const styles = {
   unit: {
-    margin: 10,
+    margin: 2,
   },
   image: {
-    width: 200,
+    width: 50,
   },
 }
 
@@ -16,7 +16,7 @@ const ActivationUnit = props => {
   return(
     <Paper className={classes.unit}>
       <img className={classes.image} alt="activation" src={props.image_path}/>
-      <p>Filter ID: {props.id}</p>
+
     </Paper>
   )
 }
