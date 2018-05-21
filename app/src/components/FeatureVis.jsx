@@ -9,6 +9,8 @@ import { MenuItem } from 'material-ui/Menu';
 import Select from 'material-ui/Select';
 import { InputLabel } from 'material-ui/Input';
 
+import DisplayNetwork from './network/DisplayNetwork';
+
 import {getRequest, postRequest} from '../utilities/apiCalls';
 import {withStyles} from "material-ui/styles/index";
 
@@ -45,6 +47,12 @@ const styles = {
     width: 60
 
   },
+  channelInput: {
+    marginTop: 10,
+    marginRight: 20,
+    width: 300
+
+  },
   visButton: {
     marginTop: 10,
     marginRight: 20,
@@ -62,7 +70,6 @@ class FeatureVis extends Component {
     super(props);
     this.state = {
       img_paths: [],
-      layer_name: 'InceptionV1/InceptionV1/Mixed_4c/concat:0',
       channel: 134,
       steps: 200,
       lr: 3.0,
@@ -81,15 +88,21 @@ class FeatureVis extends Component {
 
       all_layers: [],
 
+      layers: [],
+      selectedLayer: {
+        info: {},
+      },
+
       imagenet_paths: [],
     };
     this.mixFeature = this.mixFeature.bind(this);
   }
 
   componentDidMount() {
-    getRequest('/layer_names').then((res) => {
+    this.setState(this.props.localState);
+    getRequest('/layer_info').then((res) => {
       this.setState({
-        all_layers: res.names,
+        layers: res.layers,
       });
     })
   }
@@ -125,7 +138,7 @@ class FeatureVis extends Component {
       .then(data => this.setState({ img_paths: [data.data[cat_index].images.fixed_height.url] }));
 
     const body = {
-      layer_name: this.state.layer_name,
+      layer_name: this.state.selectedLayer.output,
       channel: this.state.channel,
       steps: this.state.steps,
       lr: this.state.lr,
@@ -155,6 +168,11 @@ class FeatureVis extends Component {
     this.setState({mix: true}, () => {this.visualizeFeature();});
 
   };
+
+  changeSelectedLayer = layer => {
+    this.setState({selectedLayer: layer})
+  };
+
 
   getImagenetExamples = (event) => {
 
@@ -193,14 +211,15 @@ class FeatureVis extends Component {
             <FormControl>
               <h2>Feature Inversion</h2>
               <span>
-                <Select className={classes.layerInput} value={this.state.layer_name} onChange={this.handleInputChange} inputProps={{ name: 'layer_name',}}>
+                {/*<Select className={classes.layerInput} value={this.state.layer_name} onChange={this.handleInputChange} inputProps={{ name: 'layer_name',}}>
                 {
                   this.state.all_layers.map((name, i) => (
                     <MenuItem key={i} value={name.id}>{name.name}</MenuItem>
                   ))
                 }
-                </Select>
-                <TextField className={classes.paramInput} label="Channel(s):" name="channel" value={this.state.channel} onChange={this.handleInputChange} />
+                </Select>*/}
+                <DisplayNetwork layers={this.state.layers} selectedLayer={this.state.selectedLayer} changeSelectedLayer={this.changeSelectedLayer}/>
+                <TextField className={classes.channelInput} label="Channel(s):" name="channel" value={this.state.channel} onChange={this.handleInputChange} />
                 {/*<Button variant="raised" className={classes.addButton} onClick={this.visualizeFeature}>add</Button>*/}
 
               </span>

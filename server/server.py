@@ -126,7 +126,7 @@ def visualize():
 
     print(request.data)
 
-    layer_name = json.loads(request.data)['layer_name']
+    layer_name = json.loads(request.data)['layer_name'] + ":0"
     channel = json.loads(request.data)['channel']
     mix = json.loads(request.data)['mix']
 
@@ -156,8 +156,11 @@ def visualize():
     angle = int(json.loads(request.data)['rotation'])
     angles = list(range(-angle, angle)) or None
     scale = float(json.loads(request.data)['scale'])
-    lower_scale, upper_scale = 1.0 - scale, 1.0 + scale
-    scales = np.arange(lower_scale, upper_scale, 0.01, dtype='float32')
+    if scale == 0:
+        scales = None
+    else:
+        lower_scale, upper_scale = 1.0 - scale, 1.0 + scale
+        scales = np.arange(lower_scale, upper_scale, 0.01, dtype='float32')
 
     param_space = json.loads(request.data)['param_space']
 
