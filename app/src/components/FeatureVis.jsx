@@ -8,6 +8,7 @@ import TextField from 'material-ui/TextField';
 import { MenuItem } from 'material-ui/Menu';
 import Select from 'material-ui/Select';
 import { InputLabel } from 'material-ui/Input';
+import { CircularProgress } from 'material-ui/Progress';
 
 import DisplayNetwork from './network/DisplayNetwork';
 
@@ -130,13 +131,6 @@ class FeatureVis extends Component {
 
     this.setState({loading: true});
 
-    const api_key = 'dc6zaTOxFJmzC';
-    const url = `http://api.giphy.com/v1/gifs/search?q=${'cat'}&api_key=${api_key}`;
-    let cat_index = Math.floor(Math.random() * 24);
-    fetch(url)
-      .then(response => response.json())
-      .then(data => this.setState({ img_paths: [data.data[cat_index].images.fixed_height.url] }));
-
     const body = {
       layer_name: this.state.selectedLayer.output,
       channel: this.state.channel,
@@ -178,15 +172,8 @@ class FeatureVis extends Component {
 
     this.setState({loading_imagenet: true});
 
-    const api_key = 'dc6zaTOxFJmzC';
-    const url = `http://api.giphy.com/v1/gifs/search?q=${'kanye'}&api_key=${api_key}`;
-    let kanye_index = Math.floor(Math.random() * 24);
-    fetch(url)
-      .then(response => response.json())
-      .then(data => this.setState({ imagenet_paths: [data.data[kanye_index].images.fixed_height.url] }));
-
     const body = {
-      layer_name: this.state.layer_name,
+      layer_name: this.state.selectedLayer.output,
       channel: this.state.channel,
     };
 
@@ -256,13 +243,13 @@ class FeatureVis extends Component {
         </Paper>
         <div>
           <Paper className={classes.paperImage}>
-            {this.state.loading ? <h4>Visualizing, please wait.. <br />Todo: replace random cat gif with load bar</h4> : ''}
+            {this.state.loading ? <h4>Visualizing, please wait.. <br /><CircularProgress size={68} className={classes.loadingIcon}/></h4> : ''}
             {this.state.img_paths.map((filepath, index)=>(
                 <img key={index} alt={this.state.layer} src={filepath} />
             ))}
           </Paper>
           <Paper className={classes.paperImage}>
-            {this.state.loading_imagenet ? <p>Finding examples, please wait.. <br />Todo: replace random kanye gif with load bar</p> : ''}
+            {this.state.loading_imagenet ? <p>Retrieving examples, please wait.. <br /><br /><CircularProgress size={68} className={classes.loadingIcon}/></p> : ''}
             {this.state.imagenet_paths.map((filepath, index)=>(
                 <img key={index} alt={index} src={filepath} />
             ))}

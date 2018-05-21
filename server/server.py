@@ -66,7 +66,7 @@ def predict():
 @app.route('/predict_multiple', methods=['POST'])
 def predict_multiple():
 
-    layer_name = json.loads(request.data)['layer_name']
+    layer_name = json.loads(request.data)['layer_name'] + ":0"
     channel = int(json.loads(request.data)['channel'])
 
     images = []
