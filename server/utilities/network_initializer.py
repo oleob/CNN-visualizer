@@ -10,7 +10,7 @@ from tensorflow.contrib import slim
 checkpoints_dir = 'checkpoints'
 
 
-def init_network(network_name, network_type, naive=False, x_dim=-1, y_dim=-1, pad=None, jitter=None, rotate=None, scale=None):
+def init_network(network_name, network_type, param_space='fourier', laplace_levels=4, x_dim=-1, y_dim=-1, pad=None, jitter=None, rotate=None, scale=None):
 
     #Reset graph
     tf.reset_default_graph()
@@ -51,7 +51,7 @@ def init_network(network_name, network_type, naive=False, x_dim=-1, y_dim=-1, pa
         input_graph = lower + input_layer * (upper - lower)
         input_graph = tf.convert_to_tensor(input_graph, dtype=tf.float32)
     elif network_type=='visualize':
-        input_layer = graph_builder.build(x_dim, y_dim, pad=pad, jitter=jitter, rotate=rotate, scale=scale, naive=naive)
+        input_layer = graph_builder.build(x_dim, y_dim, param_space=param_space, laplace_levels=laplace_levels, pad=pad, jitter=jitter, rotate=rotate, scale=scale)
         input_layer = tf.identity(input_layer, name='input_layer')
         if network_name=='InceptionV1':
             # preprocess for inceptionV1

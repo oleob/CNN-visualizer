@@ -84,7 +84,8 @@ def predict_multiple():
     print("..loading complete")
     start_time = time.time()
     batch_size = 1000
-    num_batches = 15  #int(50000/batch_size)
+    # TODO: fix timeout bug
+    num_batches = int(50000/batch_size)
     results = []
     for i in range(num_batches):
         batch = images[i * batch_size:(i + 1) * batch_size]
@@ -96,6 +97,14 @@ def predict_multiple():
     paths = [item[0] for item in path_value_sorted][:10]
     duration = time.time() - start_time
     print("prediction complete\ttime:", duration)
+
+    # save the images (for testing purposes), until the timeout-bug is fixed
+    import PIL.Image
+    i = 0
+    for path in paths:
+        i += 1
+        img = PIL.Image.open(path)
+        img.save('static/images/temp/' + 'tiny_img' + str(i) + '.jpg', "JPEG")
 
     return json.dumps({'filepaths': paths})
 
@@ -123,6 +132,8 @@ def visualize():
 
     if channel == '':
         channel_list = [None]
+    elif isinstance(channel, int):
+        channel_list = [channel]
     elif "," in channel:
         channel_list = channel.split(",")
         channel_list = [int(ch) for ch in channel_list]
@@ -147,9 +158,8 @@ def visualize():
     scales = np.arange(0.95, 1.1, 0.02, dtype='float32')  # (0.9, 1.1, 0.1)
 
     param_space = json.loads(request.data)['param_space']
-    naive = True if param_space == 'naive' else False
 
-    init_fn = init_network(network_name, 'visualize', x_dim=dim, y_dim=dim, pad=pad, jitter=jitter, rotate=angles, scale=None, naive=naive)
+    init_fn = init_network(network_name, 'visualize', param_space=param_space, x_dim=dim, y_dim=dim, pad=pad, jitter=jitter, rotate=angles, scale=None)
     net = VisNetwork(init_fn)
 
     steps = int(json.loads(request.data)['steps'])
@@ -157,7 +167,7 @@ def visualize():
 
     print(opt_list)
 
-    filepaths = net.visualize(opt_list, steps=steps, lr=lr, naive=naive)
+    filepaths = net.visualize(opt_list, steps=steps, lr=lr)
     return json.dumps({'filepaths': filepaths})
 
 @app.route('/current_settings', methods=['GET'])

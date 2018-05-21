@@ -10,82 +10,88 @@ import utilities.feature_vis.misc as misc
 from preprocessing import vgg_preprocessing
 
 
-# TODO: in case of deepdream, convert the rgb image into the fourier space first
-# TODO: there is a bug when using different dimension-sizes ..fix it
-def fft_img(x_dim=200, y_dim=200):
-    # input_array = misc.random_noise_img(batch_size, x_dim, y_dim)
-    # #input_shape = [batch_size, 3, x_dim, y_dim]
-    # t = tf.transpose(input_array, [0, 3, 1, 2])
-    # fft = tf.spectral.fft2d(t)
-    # ir_fft = tf.spectral.irfft2d(fft)
-    # print(ir_fft.shape)
-    # img = tf.transpose(ir_fft, [])
-    # img = PIL.Image.fromarray(img.astype('uint8'))
-    # img.show()
+def decorrelate_imagenet_colors(tensor):
+    color_correlations = np.asarray([[0.26, 0.09, 0.02],
+                                     [0.27, 0.00, -0.05],
+                                     [0.27, -0.09, 0.03]]).astype("float32")
+    flat_rgb = tf.reshape(tensor, [-1, 3])
+    flat_rgb = tf.matmul(flat_rgb, color_correlations.T)
+    tensor = tf.reshape(flat_rgb, tf.shape(tensor))
 
+    return tensor
+
+
+def fourier_space(x_dim=200, y_dim=200):
     print("creating a fourier base img")
-    # find the frequencies in the y-direction
-    freq_y = np.fft.fftfreq(y_dim)[:, None]
-    # find the freq in x direction ..in case of odd input dimension,
-    # keep one additional frequency and later cut off 1 pixel
-    if x_dim % 2 == 1:
-        freq_x = np.fft.fftfreq(x_dim)[:x_dim // 2 + 2]
-    else:
-        freq_x = np.fft.fftfreq(x_dim)[:x_dim // 2 + 1]
-    # TODO: get a better grip on the following steps
-    freq = np.sqrt(np.square(freq_x) + np.square(freq_y))
-    freq_height, freq_width = freq.shape
-    init_val = 0.01 * np.random.randn(2, 3, freq_height, freq_width).astype("float32")
+    # find the dimensions of the frequency space
+    r_freq, c_freq = x_dim, y_dim//2 + 1
+
+    # create arrays of the frequency bins in both directions
+    r_freq_bins = np.fft.fftfreq(y_dim)[:, None]
+    c_freq_bins = np.fft.fftfreq(x_dim)[:c_freq]
+
+    # initialize the space with random values
+    initial_values = 0.01 * np.random.randn(2, 3, r_freq, c_freq).astype("float32")
     with tf.variable_scope("variable"):
-        spectrum_var = tf.Variable(init_val)
+        spectrum_var = tf.Variable(initial_values)
     spectrum = tf.complex(spectrum_var[0], spectrum_var[1])
-    spectrum_scale = 1.0 / np.maximum(freq, 1.0 / max(y_dim, x_dim))
-    spectrum_scale = spectrum_scale*np.sqrt(x_dim*y_dim)
+
+    # TODO: still some unclear fourier stuff below
+    freq = np.sqrt(np.square(r_freq_bins) + np.square(c_freq_bins))
+    # replace 0.0, so we can divide
+    freq[freq == 0.0] = 1.0 / max(y_dim, x_dim)
+    spectrum_scale = 1.0 / freq
     scaled_spectrum = spectrum * spectrum_scale
-    img = tf.spectral.irfft2d(scaled_spectrum)
-    img = img[:3, :y_dim, :x_dim]
-    img = tf.transpose(img, [1, 2, 0])
 
-    # create a tensor of the list of image-tensors
-    # TODO: why divide by 4? ..found the reason somewhere
-    fft_tensor = img / 4.0
-
+    # take the inverse 2d-fft to get back to a standard rgb-image
+    rgb = tf.spectral.irfft2d(scaled_spectrum)
+    rgb = rgb[:3, :y_dim, :x_dim]
+    rgb = tf.transpose(rgb, [1, 2, 0])
 
     # decorrelate the colors
-    # TODO: understand the following color-decorrelation a bit better, the following is just for imagenet
-    color_correlation_svd_sqrt = np.asarray([[0.26, 0.09, 0.02],
-                                             [0.27, 0.00, -0.05],
-                                             [0.27, -0.09, 0.03]]).astype("float32")
-    max_norm_svd_sqrt = np.max(np.linalg.norm(color_correlation_svd_sqrt, axis=0))
-    flat = tf.reshape(fft_tensor, [-1, 3])
-    color_correlation_normalized = color_correlation_svd_sqrt / max_norm_svd_sqrt
-    flat = tf.matmul(flat, color_correlation_normalized.T)
-    rgb = tf.reshape(flat, tf.shape(fft_tensor))
-
-    rgb = tf.transpose(rgb, [1, 0, 2])
+    rgb = decorrelate_imagenet_colors(rgb)
 
     # sigmoid the tensor
     rgb = tf.nn.sigmoid(rgb[..., :3])
 
-    # name the image-tensor so we can eval() it and see the results during optimization
-    rgb = tf.identity(rgb, name='image')
-
     return rgb
 
 
-def naive_input(x_dim=200, y_dim=200, dream_img=None):
+def naive_space(x_dim=200, y_dim=200, dream_img=None):
 
-    if dream_img is None:
-        dream_img = misc.random_noise_img(x_dim, y_dim)
+    rgb = misc.random_noise_img(x_dim, y_dim)
+
     with tf.variable_scope("variable"):
-        rgb = tf.Variable(dream_img, dtype='float32')
-
-    # forget height and width of the input
-    # zero = tf.identity(0)
-    # rgb = rgb[zero:, zero:, :]
-
-    # name the image-tensor so we can eval() it and see the results during optimization
-    rgb = tf.identity(rgb, name='image')
+        rgb = tf.Variable(rgb, dtype='float32')
 
     return rgb
+
+
+def laplacian_pyramid_space(x_dim=200, y_dim=200, laplace_levels=4):
+
+    pyramid_tensor = 0
+
+    for n in range(laplace_levels):
+
+        # compute the dimensions of a smaller image
+        temp_x_dim = x_dim // 2**n
+        temp_y_dim = y_dim // 2**n
+
+        # initalize a random laplacian which will be added to the pyramid
+        # we need 4 dimensions because resize_bilinear expects a rank of 4
+        initial_values = 0.01 * np.random.randn(1, temp_x_dim, temp_y_dim, 3).astype("float32")
+        with tf.variable_scope("variable"):
+            temp_tensor = tf.Variable(initial_values)
+
+        temp_tensor = tf.image.resize_bilinear(temp_tensor, [x_dim, y_dim])
+        pyramid_tensor += temp_tensor
+
+    # remove unnecessary batch dimension
+    rgb = tf.squeeze(pyramid_tensor)
+
+    rgb = decorrelate_imagenet_colors(rgb)
+    rgb = tf.nn.sigmoid(rgb[..., :3])
+
+    return rgb
+
 

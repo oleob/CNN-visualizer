@@ -15,7 +15,7 @@ import utilities.feature_vis.misc as misc
 
 
 
-def visualize_features(opt, init_fn, steps=200, lr=0.06, optimizer=None, naive=False, save_run=False):
+def visualize_features(opt, init_fn, steps=200, lr=0.06, optimizer=None, save_run=False):
 
     num_visualizations = 1
     mix = False
@@ -89,20 +89,14 @@ def visualize_features(opt, init_fn, steps=200, lr=0.06, optimizer=None, naive=F
                 # save the current optimized image (for testing purposes and cool animations)
                 if save_run:
                     img = image_tensor.eval()
-                    if naive is False:
-                        misc.save_image(img, 'static/images/temp/' + 'img' + str(i) + '.jpg')
-                    else:
-                        misc.save_image_naive(img, 'static/images/temp/' + 'img' + str(i) + '.jpg')
+                    misc.save_image(img, 'static/images/temp/' + 'img' + str(i) + '.jpg')
 
                 # optimize the image a little bit
                 sess.run([loss, opt_tensor])
 
             img = image_tensor.eval()
             filepath = 'static/images/temp/' + 'img' + str(uuid.uuid4()) + '.jpg'
-            if naive is False:
-                misc.save_image(img, filepath)
-            else:
-                misc.save_image_naive(img, filepath)
+            misc.save_image(img, filepath)
             filepaths.append(filepath)
 
         duration = time.time() - start_time
@@ -111,6 +105,8 @@ def visualize_features(opt, init_fn, steps=200, lr=0.06, optimizer=None, naive=F
 
 
 def create_loss(opt, graph):
+
+    loss = 0
 
     # create loss from a single layer/channel
     if isinstance(opt, tuple):

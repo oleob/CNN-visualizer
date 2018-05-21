@@ -107,7 +107,9 @@ class FeatureVis extends Component {
     if (value === 'naive') {
       this.setState({lr: 3.0})
     } else if (value === 'fourier') {
-      this.setState({lr: 0.06})
+      this.setState({lr: 3.0})
+    } else if (value === 'laplacian') {
+      this.setState({lr: 0.1})
     }
   };
 
@@ -209,9 +211,9 @@ class FeatureVis extends Component {
                 <FormControlLabel control={<Radio/>} checked={this.state.param_space === 'fourier'}
                                   onChange={this.handleInputChange} value={'fourier'}
                                   name="param_space" label="Fourier"/>
-                <FormControlLabel control={<Radio/>} checked={this.state.param_space === ''}
-                                  onChange={this.handleInputChange} value={''}
-                                  name="param_space" label="Option 3"/>
+                <FormControlLabel control={<Radio/>} checked={this.state.param_space === 'laplacian'}
+                                  onChange={this.handleInputChange} value={'laplacian'}
+                                  name="param_space" label="Laplacian"/>
               </span>
               <span>
                 <TextField className={classes.paramInput} label="Steps:" name="steps" value={this.state.steps} onChange={this.handleInputChange} />
