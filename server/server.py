@@ -155,11 +155,13 @@ def visualize():
     jitter = int(json.loads(request.data)['jitter'])
     angle = int(json.loads(request.data)['rotation'])
     angles = list(range(-angle, angle)) or None
-    scales = np.arange(0.95, 1.1, 0.02, dtype='float32')  # (0.9, 1.1, 0.1)
+    scale = float(json.loads(request.data)['scale'])
+    lower_scale, upper_scale = 1.0 - scale, 1.0 + scale
+    scales = np.arange(lower_scale, upper_scale, 0.01, dtype='float32')
 
     param_space = json.loads(request.data)['param_space']
 
-    init_fn = init_network(network_name, 'visualize', param_space=param_space, x_dim=dim, y_dim=dim, pad=pad, jitter=jitter, rotate=angles, scale=None)
+    init_fn = init_network(network_name, 'visualize', param_space=param_space, x_dim=dim, y_dim=dim, pad=pad, jitter=jitter, rotate=angles, scale=scales)
     net = VisNetwork(init_fn)
 
     steps = int(json.loads(request.data)['steps'])

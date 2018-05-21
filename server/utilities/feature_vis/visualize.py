@@ -37,7 +37,7 @@ def visualize_features(opt, init_fn, steps=200, lr=0.06, optimizer=None, save_ru
 
         # select tensors that we might want to access later
         image_tensor = graph.get_tensor_by_name('image:0')
-        #trans_tensor = graph.get_tensor_by_name('transformed:0')
+        trans_tensor = graph.get_tensor_by_name('transformed:0')
         test_tensor = graph.get_tensor_by_name('test:0')
 
         # create the optimizer to the graph

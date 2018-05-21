@@ -65,12 +65,12 @@ class FeatureVis extends Component {
       layer_name: 'InceptionV1/InceptionV1/Mixed_4c/concat:0',
       channel: 134,
       steps: 200,
-      lr: 0.06,
+      lr: 3.0,
       dim: 128,
       pad: 16,
       jitter: 8,
       rotation: 5,
-      scale: 0.2,
+      scale: 0.0,
 
       param_space: 'fourier',
 
@@ -133,6 +133,7 @@ class FeatureVis extends Component {
       pad: this.state.pad,
       jitter: this.state.jitter,
       rotation: this.state.rotation,
+      scale: this.state.scale,
 
       param_space: this.state.param_space,
 

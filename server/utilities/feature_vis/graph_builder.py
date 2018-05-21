@@ -27,16 +27,21 @@ def build(x_dim=224, y_dim=224, pad=None, jitter=None, rotate=None, scale=None, 
     trans_graph = tf.identity(trans_graph, name='transformed')
 
     # need to define the dimensions because of tf.slim
-    if pad is None: pad = 0
-    prep_graph = trans_graph[pad:x_dim+pad, pad:y_dim+pad, :]
-    prep_graph = tf.reshape(prep_graph, shape=(x_dim, y_dim, 3))
+    # if pad is None: pad = 0
+    # while trans_graph.shape[0] < x_dim:
+    #     trans.pad(trans_graph, 1, 0)
+    # while trans_graph.shape[1] < y_dim:
+    #     trans_graph = trans.pad(trans_graph, 0, 1)
 
-    return prep_graph
+    sliced_input = trans_graph[pad:x_dim+pad, pad:y_dim+pad, :]
+    defined_input = tf.reshape(sliced_input, shape=(x_dim, y_dim, 3))
+
+    return defined_input
 
 
 def add_transforms(tensor, pad, jitter, rotate, scale):
     if pad is not None:
-        tensor = trans.pad(tensor, pad)
+        tensor = trans.pad(tensor, pad, pad)
     if jitter is not None:
         tensor = trans.random_jitter(tensor, jitter)
     if rotate is not None:

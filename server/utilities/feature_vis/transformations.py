@@ -16,8 +16,8 @@ def random_param(param_list):
     return param
 
 
-def pad(tensor, pad):
-    padding = tf.constant([[pad, pad], [pad, pad], [0, 0]])
+def pad(tensor, pad_x, pad_y):
+    padding = tf.constant([[pad_x, pad_x], [pad_y, pad_y], [0, 0]])
     return tf.pad(tensor, padding, constant_values=0.459)
 
 
