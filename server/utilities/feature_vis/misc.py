@@ -15,6 +15,8 @@ def show_image(img):
 
 # save image as jpg
 def save_image(img, path):
+    if img.ndim == 4:
+        img = np.squeeze(img)
     img = img * 255
     img = PIL.Image.fromarray(img.astype('uint8'))
     img.save(path)

@@ -82,7 +82,7 @@ def laplacian_pyramid_space(x_dim=200, y_dim=200, laplace_levels=4):
         initial_values = 0.01 * np.random.randn(1, temp_x_dim, temp_y_dim, 3).astype("float32")
         with tf.variable_scope("variable"):
             temp_tensor = tf.Variable(initial_values)
-
+            print(temp_tensor.shape)
         temp_tensor = tf.image.resize_bilinear(temp_tensor, [x_dim, y_dim])
         pyramid_tensor += temp_tensor
 
