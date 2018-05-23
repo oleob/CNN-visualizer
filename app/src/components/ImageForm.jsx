@@ -27,8 +27,8 @@ const styles={
     textAlign: 'center',
   },
   previewImage: {
-    maxHeight: 400,
-    maxWidth: 400,
+    maxHeight: 250,
+    maxWidth: 250,
   },
 };
 

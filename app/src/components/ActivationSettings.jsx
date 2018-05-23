@@ -39,7 +39,7 @@ class ActivationSettings extends Component {
       info: {},
     },
     loading: false,
-    result: {},
+    results: [],
     numActivations: 10,
   }
 
@@ -73,9 +73,16 @@ class ActivationSettings extends Component {
       loading: true,
     })
     postRequest('/activations', body).then((res) => {
-      this.setState({
-        result: res.result,
-        loading: false,
+      this.setState(prevState => {
+        const r = {
+          info: prevState.selectedLayer.info,
+          images: res.result,
+        }
+        prevState.results.unshift(r)
+        return({
+          results: prevState.results,
+          loading: false,
+        })
       })
     })
   }
@@ -112,7 +119,7 @@ class ActivationSettings extends Component {
             }
           </div>
         </Paper>
-        <ActivationDisplay result={this.state.result}/>
+        <ActivationDisplay results={this.state.results}/>
       </div>
     )
   }

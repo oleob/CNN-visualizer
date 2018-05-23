@@ -16,7 +16,7 @@ clear_temp_folder()
 network_name = 'InceptionV1'
 app = Flask(__name__, static_folder='./static', template_folder='./static')
 pred_net = None
-image_path = './static/images/penguins3.jpg'
+image_path = './static/images/penguins3.jpeg'
 uploaded_image = cv2.imread(image_path,1)
 
 def init_pred_net():
@@ -190,8 +190,6 @@ def toast():
     for op in ops:
         if not ('_taylor' in op.name) and ('Conv2D' in op.name or 'Relu' in op.name or 'BiasAdd' in op.name or (str(op.name).endswith('concat') and len(op.name)>6) or 'Pool' in op.name):
             rel_ops.append(op)
-    for o in rel_ops:
-        print(o.name)
     layers = []
     i = 0
     def make_layer(op, i):
@@ -206,7 +204,11 @@ def toast():
                     j += 1
 
             info = {}
-            info['name'] = op.name.split('/')[-2]
+            split = op.name.split('/')
+            if 'Mixed' in op.name:
+                info['name'] = split[-4] + ':'+ split[-3] +':' + split[-2]
+            else:
+                info['name'] = split[-2]
             info['operation'] = 'Convolution'
             info['padding'] = str(op.get_attr('padding'))
             info['strides'] = str(op.get_attr('strides'))
@@ -223,7 +225,11 @@ def toast():
                 layer['operation'] = 'Average Pool'
 
             info = {}
-            info['name'] = op.name.split('/')[-2]
+            split = op.name.split('/')
+            if 'Mixed' in op.name:
+                info['name'] = split[-4] + ':' + split[-2]
+            else:
+                info['name'] = split[-2]
             info['size'] = str(op.get_attr('ksize'))
             info['strides'] = str(op.get_attr('strides'))
             info['shape'] = str(tf.get_default_graph().get_tensor_by_name(op.name + ':0').shape)

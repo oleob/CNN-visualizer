@@ -11,9 +11,10 @@ class Taylor:
         self.epsilon = epsilon
 
         graph = tf.get_default_graph()
-        #output_layer = graph.get_tensor_by_name('Softmax:0')
         layer = output_layer.op.inputs[0]
+        r = tf.nn.softmax(tf.nn.relu(layer), name='probabilities')
         relevances = [output_layer]
+        #relevances = [r]
         relevances = traverse_graph(self, layer, relevances)
 
         self.init_fn = init_fn
@@ -46,7 +47,7 @@ class Taylor:
         z = tf.nn.avg_pool(activation, ksize, strides, padding) + self.epsilon
         s = relevance / z
         c = gen_nn_ops._avg_pool_grad(tf.shape(activation), s, ksize, strides, padding)
-        return c * activation
+        return activation * c
 
     def backprop_inception(self, layer, activation, relevance):
         inputs = [inp for inp in layer.op.inputs if not (inp.op.type=='Const')]
@@ -57,6 +58,7 @@ class Taylor:
         r_5x5 = self.backprop_nxn(inputs[2], activation, r_5)
         r_pool = self.backprop_inception_pool(inputs[3], activation, r_p)
         new_relevance = (r_1x1 + r_3x3 + r_5x5 + r_pool)
+        #new_relevance = (r_1x1 + r_3x3 + r_pool)
         return new_relevance
 
     def backprop_1x1(self, layer, activation, relevance):

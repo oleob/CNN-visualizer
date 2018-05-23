@@ -108,7 +108,9 @@ class FeatureVis extends Component {
     })
   }
 
-
+  componentWillUnmount() {
+    this.props.updateState(this.state)
+  }
 
   handleInputChange = (event) => {
     const target = event.target;

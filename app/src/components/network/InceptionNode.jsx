@@ -10,8 +10,9 @@ const styles = {
     flexWrap: 'wrap',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#77aa77',
+    backgroundColor: '#9673A6',
     borderRadius: 25,
+    margin:10,
   },
   column: {
     display: 'flex',
@@ -22,8 +23,8 @@ const styles = {
   },
   close: {
     position: 'absolute',
-    top: 10,
-    left: 10,
+    top: 20,
+    left: 20,
     cursor: 'pointer',
   },
   c2: {

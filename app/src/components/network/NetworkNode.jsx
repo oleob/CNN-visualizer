@@ -4,7 +4,7 @@ import { withStyles } from 'material-ui/styles';
 const styles = {
   conv: {
     textAlign: 'center',
-    backgroundColor: '#7777aa',
+    backgroundColor: '#B95450',
     padding: 20,
     margin: 10,
     borderRadius: 25,
@@ -12,7 +12,7 @@ const styles = {
   },
   pool: {
     textAlign: 'center',
-    backgroundColor: '#aa7777',
+    backgroundColor: '#6D8EBF',
     padding: 20,
     margin: 10,
     borderRadius: 25,
@@ -20,7 +20,7 @@ const styles = {
   },
   inception: {
     textAlign: 'center',
-    backgroundColor: '#77aa77',
+    backgroundColor: '#9673A6',
     padding: 20,
     margin: 10,
     borderRadius: 25,
