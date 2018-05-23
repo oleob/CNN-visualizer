@@ -52,7 +52,7 @@ class Network:
             index = sorted_inds[i]
 
             item = {}
-            item['name'] = self.imagenet_labels[index + shift] + ", " + str(index + shift)
+            item['name'] = self.imagenet_labels[index + shift]
             item['value'] = round(float(probabilities[index]), 4)
             results.append(item)
         return results
@@ -114,7 +114,7 @@ class Network:
         for i in range(np.minimum(num_activations, len(sorted_filters))):
             height, width, channels = img.shape
             filter_tuple = sorted_filters[i]
-            activation = filter_tuple[2]/filter_tuple[2].max()
+            activation = filter_tuple[2]/filters.max()
             activation = cv2.resize(activation,(width, height), interpolation=0)
             if overlay:
                 r,g,b = cv2.split(img)
