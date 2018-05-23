@@ -87,6 +87,7 @@ class FeatureVis extends Component {
   }
 
   componentDidMount() {
+    this.setState(this.props.localState)
     getRequest('/layer_names').then((res) => {
       this.setState({
         all_layers: res.names,
@@ -94,7 +95,9 @@ class FeatureVis extends Component {
     })
   }
 
-
+  componentWillUnmount() {
+    this.props.updateState(this.state)
+  }
 
   handleInputChange = (event) => {
     const target = event.target;
