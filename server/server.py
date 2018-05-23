@@ -16,7 +16,7 @@ clear_temp_folder()
 network_name = 'InceptionV1'
 app = Flask(__name__, static_folder='./static', template_folder='./static')
 pred_net = None
-image_path = './static/images/penguins3.jpg'
+image_path = './static/images/penguins3.jpeg'
 uploaded_image = cv2.imread(image_path,1)
 
 def init_pred_net():
@@ -184,7 +184,11 @@ def toast():
                     j += 1
 
             info = {}
-            info['name'] = op.name.split('/')[-2]
+            split = op.name.split('/')
+            if 'Mixed' in op.name:
+                info['name'] = split[-4] + ':'+ split[-3] +':' + split[-2]
+            else:
+                info['name'] = split[-2]
             info['operation'] = 'Convolution'
             info['padding'] = str(op.get_attr('padding'))
             info['strides'] = str(op.get_attr('strides'))
@@ -201,7 +205,11 @@ def toast():
                 layer['operation'] = 'Average Pool'
 
             info = {}
-            info['name'] = op.name.split('/')[-2]
+            split = op.name.split('/')
+            if 'Mixed' in op.name:
+                info['name'] = split[-4] + ':' + split[-2]
+            else:
+                info['name'] = split[-2]
             info['size'] = str(op.get_attr('ksize'))
             info['strides'] = str(op.get_attr('strides'))
             info['shape'] = str(tf.get_default_graph().get_tensor_by_name(op.name + ':0').shape)
