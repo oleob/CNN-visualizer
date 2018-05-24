@@ -235,6 +235,9 @@ def toast():
             info['shape'] = str(tf.get_default_graph().get_tensor_by_name(op.name + ':0').shape)
             layer['info'] = info
             increment = 1
+        else:
+            layer = {}
+            increment = 1
         return layer, increment
     children = []
     while i < len(rel_ops):
