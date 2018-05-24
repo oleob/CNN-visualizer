@@ -4,6 +4,7 @@
 import numpy as np
 import random
 import PIL.Image
+import cv2
 
 
 # display image
@@ -18,8 +19,9 @@ def save_image(img, path):
     if img.ndim == 4:
         img = np.squeeze(img)
     img = img * 255
-    img = PIL.Image.fromarray(img.astype('uint8'))
-    img.save(path)
+    cv2.imwrite(path, img)
+    # img = PIL.Image.fromarray(img.astype('uint8'))
+    # img.save(path)
 
 
 def save_image_naive(img, path):

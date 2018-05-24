@@ -129,6 +129,7 @@ def visualize():
     layer_name = json.loads(request.data)['layer_name'] + ":0"
     channel = json.loads(request.data)['channel']
     mix = json.loads(request.data)['mix']
+    decorrelate_colors = json.loads(request.data)['decorrelate']
 
     if channel == '':
         channel_list = [None]
@@ -164,7 +165,68 @@ def visualize():
 
     param_space = json.loads(request.data)['param_space']
 
-    init_fn = init_network(network_name, 'visualize', param_space=param_space, x_dim=dim, y_dim=dim, pad=pad, jitter=jitter, rotate=angles, scale=scales)
+    init_fn = init_network(network_name, 'visualize', param_space=param_space, x_dim=dim, y_dim=dim,
+                           pad=pad, jitter=jitter, rotate=angles, scale=scales, decorrelate_colors=decorrelate_colors)
+    net = VisNetwork(init_fn)
+
+    steps = int(json.loads(request.data)['steps'])
+    lr = float(json.loads(request.data)['lr'])
+
+    print(opt_list)
+
+    filepaths = net.visualize(opt_list, steps=steps, lr=lr)
+    return json.dumps({'filepaths': filepaths})
+
+@app.route('/deep_dream', methods=['POST'])
+def deep_dream():
+
+    print(request.data)
+
+    layer_name = json.loads(request.data)['layer_name'] + ":0"
+    channel = json.loads(request.data)['channel']
+
+    mix = False
+    decorrelate_colors = json.loads(request.data)['decorrelate']
+
+    if channel == '':
+        channel_list = [None]
+    elif isinstance(channel, int):
+        channel_list = [channel]
+    elif "," in channel:
+        channel_list = channel.split(",")
+        channel_list = [int(ch) for ch in channel_list]
+        mix = True
+    else:
+        channel_list = [int(channel)]
+
+    opt_list = []
+    for ch in channel_list:
+        if mix:
+            opt = (layer_name, ch, 1)
+        else:
+            opt = (layer_name, ch)
+        opt_list.append(opt)
+
+    dim = int(json.loads(request.data)['dim'])
+
+    # TODO: find a way to pad only the minimal required amount
+    pad = int(json.loads(request.data)['pad'])
+    jitter = int(json.loads(request.data)['jitter'])
+    angle = int(json.loads(request.data)['rotation'])
+    angles = list(range(-angle, angle)) or None
+    scale = float(json.loads(request.data)['scale'])
+    if scale == 0:
+        scales = None
+    else:
+        lower_scale, upper_scale = 1.0 - scale, 1.0 + scale
+        scales = np.arange(lower_scale, upper_scale, 0.01, dtype='float32')
+
+    param_space = 'naive'
+    print(scales)
+
+    init_fn = init_network(network_name, 'visualize', param_space=param_space, x_dim=dim, y_dim=dim,
+                           pad=pad, jitter=jitter, rotate=angles, scale=scales,
+                           dream_img=uploaded_image, decorrelate_colors=decorrelate_colors)
     net = VisNetwork(init_fn)
 
     steps = int(json.loads(request.data)['steps'])

@@ -9,7 +9,8 @@ import utilities.feature_vis.transformations as trans
 import utilities.feature_vis.input_parameterization as par
 
 
-def build(x_dim=224, y_dim=224, pad=None, jitter=None, rotate=None, scale=None, param_space='laplacian', laplace_levels=None, dream_img=None):
+def build(x_dim=224, y_dim=224, pad=None, jitter=None, rotate=None, scale=None,
+          param_space='laplacian', laplace_levels=4, dream_img=None, decorrelate_colors=True):
 
     padded_dim = x_dim+2*pad
 
@@ -19,7 +20,20 @@ def build(x_dim=224, y_dim=224, pad=None, jitter=None, rotate=None, scale=None, 
     elif param_space == 'laplacian':
         input_tensor = par.laplacian_pyramid_space(padded_dim, padded_dim, laplace_levels)
     else:
-        input_tensor = par.naive_space(x_dim, y_dim)
+        if dream_img is not None:
+            dream_img = dream_img.astype("float32")
+            dream_img = dream_img / 255
+            scale_img = x_dim / len(dream_img)
+            y_dim = int(scale_img * len(dream_img[0]))
+        input_tensor = par.naive_space(x_dim+2*pad, y_dim+2*pad, dream_img, decorrelate_colors)
+
+    # decorrelate the colors
+    if decorrelate_colors:
+        input_tensor = par.decorrelate_imagenet_colors(input_tensor)
+
+    # sigmoid the tensor
+    if dream_img is None:
+        input_tensor = tf.nn.sigmoid(input_tensor[..., :3])
 
     # name the image-tensor so we can eval() it and see the results during optimization
     image_tensor = input_tensor[pad:x_dim+pad, pad: y_dim+pad]
@@ -30,12 +44,6 @@ def build(x_dim=224, y_dim=224, pad=None, jitter=None, rotate=None, scale=None, 
     trans_graph = tf.identity(trans_graph, name='transformed')
 
     # need to define the dimensions because of tf.slim
-    # if pad is None: pad = 0
-    # while trans_graph.shape[0] < x_dim:
-    #     trans.pad(trans_graph, 1, 0)
-    # while trans_graph.shape[1] < y_dim:
-    #     trans_graph = trans.pad(trans_graph, 0, 1)
-
     x_dim_input = tf.shape(trans_graph)[0]
     y_dim_input = tf.shape(trans_graph)[1]
 

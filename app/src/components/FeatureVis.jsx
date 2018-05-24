@@ -25,7 +25,7 @@ const styles = {
     display: 'inline-block',
     margin: 40,
     padding: 20,
-    width: 550
+
   },
 
   paperImage: {
@@ -83,6 +83,7 @@ class FeatureVis extends Component {
       param_space: 'fourier',
 
       mix: false,
+      decorrelate: true,
 
       loading: false,
       loading_imagenet: false,
@@ -129,6 +130,10 @@ class FeatureVis extends Component {
     }
   };
 
+  handleCheckbox = (event) => {
+    this.setState({decorrelate: !this.state.decorrelate})
+  };
+
   visualizeFeature = (event) => {
 
     this.setState({loading: true});
@@ -147,6 +152,7 @@ class FeatureVis extends Component {
       param_space: this.state.param_space,
 
       mix: this.state.mix,
+      decorrelate: this.state.decorrelate,
     };
 
     postRequest('/visualize', body).then((res) => {
@@ -160,7 +166,6 @@ class FeatureVis extends Component {
   };
 
   mixFeature = (event) => {
-
     this.setState({mix: true}, () => {this.visualizeFeature();});
 
   };
@@ -228,6 +233,9 @@ class FeatureVis extends Component {
                 <TextField className={classes.paramInput} label="Steps:" name="steps" value={this.state.steps} onChange={this.handleInputChange} />
                 <TextField className={classes.paramInput} label="Size:" name="dim" value={this.state.dim} onChange={this.handleInputChange} />
                 <TextField className={classes.paramInput} label="LearningRate:" name="lr" value={this.state.lr} onChange={this.handleInputChange} />
+                <FormControlLabel control={<Checkbox/>} checked={this.state.decorrelate}
+                                  onChange={this.handleCheckbox} value={this.state.decorrelate}
+                                  name="decorrelate" label="Decorrelate Colors"/>
               </span>
               <span>
                 <TextField className={classes.paramInput} label="Padding:" name="pad" value={this.state.pad} onChange={this.handleInputChange} />
