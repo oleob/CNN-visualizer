@@ -182,6 +182,13 @@ def current_settings():
     settings['network_name'] = network_name
     return json.dumps(settings)
 
+@app.route('/all_activations', methods=['GET'])
+def all_activations():
+    init_pred_net()
+    layers = json.loads(toast())['layers']
+    pred_net.get_all_activations(uploaded_image, layers, 10)
+    return('Done')
+
 @app.route('/layer_info', methods=['GET'])
 def toast():
     init_pred_net()
