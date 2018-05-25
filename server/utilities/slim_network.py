@@ -90,7 +90,45 @@ class Network:
     def get_layer_names(self):
         return self.layer_names(self.output_layer)
 
-    def get_layer_activations(self, image, layer_name, num_activations, overlay):
+    def get_all_activations(self, image, layers, num_activations):
+        layers = layers[:-3]
+        dim = 72
+        final_image = np.zeros((len(layers)*dim, num_activations*dim))
+
+        #load image
+        sess = tf.Session(config=self.sess_config)
+        self.init_fn(sess)
+        for x in range(len(layers)):
+            layer = layers[x]
+            tensor = sess.graph.get_tensor_by_name(layer['output'] + ':0')
+            processed_image = sess.graph.get_tensor_by_name('ExpandDims:0')
+            img, units = sess.run([processed_image, tensor],feed_dict={self.input_image: image})
+            img = img[0]
+            #format the filters
+            filters = units[0,:,:,:]
+            filter_size = units.shape[3]
+            width = units.shape[1]
+            height = units.shape[2]
+
+            sorted_filters = list()
+            for i in range(filter_size):
+                fi = filters[:,:,i]
+                sorted_filters.append((fi.sum(),i,fi))
+            sorted_filters = sorted(sorted_filters, reverse=True, key=lambda tup: tup[0])
+            result = {}
+            for y in range(np.minimum(num_activations, len(sorted_filters))):
+                #height, width, channels = img.shape
+                height, width, channels = [dim,dim,3]
+                filter_tuple = sorted_filters[y]
+                activation = filter_tuple[2]/filter_tuple[2].max()
+                activation = cv2.resize(activation,(width, height), interpolation=0)
+                newImg = activation*255
+                final_image[x*dim:x*dim + newImg.shape[0], y*dim:y*dim + newImg.shape[1]] = newImg
+        filepath = 'static/images/temp/' + str(uuid.uuid4()) + '.jpg'
+        cv2.imwrite(filepath, final_image)
+        return 'done'
+
+    def get_layer_activations(self, image, layer_name, num_activations, overlay, sort_by_id=False):
         #load image
         sess = tf.Session(config=self.sess_config)
         self.init_fn(sess)
@@ -109,12 +147,16 @@ class Network:
         for i in range(filter_size):
             fi = filters[:,:,i]
             sorted_filters.append((fi.sum(),i,fi))
-        sorted_filters = sorted(sorted_filters, reverse=True, key=lambda tup: tup[0])
+        if sort_by_id:
+            sorted_filters = sorted(sorted_filters, reverse=True, key=lambda tup: tup[1])
+        else:
+            sorted_filters = sorted(sorted_filters, reverse=True, key=lambda tup: tup[0])
         result = {}
         for i in range(np.minimum(num_activations, len(sorted_filters))):
             height, width, channels = img.shape
+            #height, width, channels = [72,72,3]
             filter_tuple = sorted_filters[i]
-            activation = filter_tuple[2]/filters.max()
+            activation = filter_tuple[2]/filter_tuple[2].max()
             activation = cv2.resize(activation,(width, height), interpolation=0)
             if overlay:
                 r,g,b = cv2.split(img)
@@ -124,7 +166,7 @@ class Network:
                 newImg = cv2.merge((r,g,b))
             else:
                 newImg = activation*255
-            filepath = 'static/images/temp/'+ str(uuid.uuid4()) + '.jpg'
+            filepath = 'static/images/temp/'+ str(i) + '_' + str(uuid.uuid4()) + '.jpg'
             cv2.imwrite(filepath, newImg)
             result[str(i)] = {'image_path': filepath, 'id': filter_tuple[1]}
         return result
