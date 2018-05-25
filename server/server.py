@@ -224,9 +224,14 @@ def deep_dream():
     param_space = 'naive'
     print(scales)
 
+    dream_img = cv2.cvtColor(uploaded_image, cv2.COLOR_RGB2BGR)
+    pad_dims = ((pad, pad), (pad, pad), (0, 0))
+    dream_img = np.pad(dream_img, pad_width=pad_dims, mode='constant', constant_values=127)
+
+
     init_fn = init_network(network_name, 'visualize', param_space=param_space, x_dim=dim, y_dim=dim,
                            pad=pad, jitter=jitter, rotate=angles, scale=scales,
-                           dream_img=uploaded_image, decorrelate_colors=decorrelate_colors)
+                           dream_img=dream_img, decorrelate_colors=decorrelate_colors)
     net = VisNetwork(init_fn)
 
     steps = int(json.loads(request.data)['steps'])
