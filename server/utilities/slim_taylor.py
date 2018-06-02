@@ -13,14 +13,14 @@ class Taylor:
         graph = tf.get_default_graph()
         layer = output_layer.op.inputs[0]
         r = tf.nn.softmax(tf.nn.relu(layer), name='probabilities')
-        relevances = [output_layer]
+        self.relevances = [output_layer]
         #relevances = [r]
-        relevances = traverse_graph(self, layer, relevances)
+        relevances = traverse_graph(self, layer, self.relevances)
 
         self.init_fn = init_fn
         self.sess_config = sess_config
         self.input_image = input_image
-        self.relevances = relevances
+        #self.relevances = relevances
 
     def get_parent(self, child, num_skips):
         parent = child
@@ -53,12 +53,20 @@ class Taylor:
         inputs = [inp for inp in layer.op.inputs if not (inp.op.type=='Const')]
         split_dim = tf.constant([int(inputs[0].shape[3]), int(inputs[1].shape[3]), int(inputs[2].shape[3]), int(inputs[3].shape[3])])
         r_1, r_3, r_5, r_p = tf.split(relevance, split_dim, axis=3)
-        r_1x1 = self.backprop_1x1(inputs[0], activation, r_1)
-        r_3x3 = self.backprop_nxn(inputs[1], activation, r_3)
-        r_5x5 = self.backprop_nxn(inputs[2], activation, r_5)
-        r_pool = self.backprop_inception_pool(inputs[3], activation, r_p)
+        with tf.variable_scope(activation.op.name.split('/')[-2] + '_taylor_1x1'):
+            r_1x1 = self.backprop_1x1(inputs[0], activation, r_1)
+        with tf.variable_scope(activation.op.name.split('/')[-2] + '_taylor_3x3'):
+            r_3x3 = self.backprop_nxn(inputs[1], activation, r_3)
+        with tf.variable_scope(activation.op.name.split('/')[-2] + '_taylor_5x5'):
+            r_5x5 = self.backprop_nxn(inputs[2], activation, r_5)
+        with tf.variable_scope(activation.op.name.split('/')[-2] + '_taylor_pool'):
+            r_pool = self.backprop_inception_pool(inputs[3], activation, r_p)
+        # self.relevances.append(r_1x1)
+        # self.relevances.append(r_3x3)
+        # self.relevances.append(r_5x5)
+        # self.relevances.append(r_pool)
         new_relevance = (r_1x1 + r_3x3 + r_5x5 + r_pool)
-        #new_relevance = (r_1x1 + r_3x3 + r_pool)
+        new_relevance = (r_1x1 + r_3x3 + r_pool)
         return new_relevance
 
     def backprop_1x1(self, layer, activation, relevance):
@@ -156,6 +164,18 @@ class Taylor:
             #make sure layer is convolutional and size bigger than 1x1
             if(len(res.shape) >= 4 and res.shape[1] > 1):
                 res = res[0,:,:,:]
+
+                # for q in range(min(num_filters, res.shape[2])):
+                #     index = sorted_filters[q]['id']
+                #     f_img = res[:,:,index]
+                #     f_img /= (f_img.max() + self.epsilon)
+                #     f_img *= 255
+                #     a_img = cv2.resize(f_img, (224, 224), interpolation=0).astype(np.uint8)
+                #     a_img = cv2.applyColorMap(a_img, cv2.COLORMAP_JET)
+                #
+                #     filepath = 'static/images/temp/' + str(self.relevances[r].name.split('/')[-2]) + '_' + str(q) + '_' + str(index) +'.jpg'
+                #     cv2.imwrite(filepath, a_img)
+
                 float_img = np.sum(res, axis=2)
                 float_img /= float_img.max()
                 float_img *= 255
@@ -164,7 +184,7 @@ class Taylor:
 
                 #filepath = 'static/images/temp/{0}_{1}.jpg'.format(r, np.sum(res))
                 filepath = 'static/images/temp/'+ str(uuid.uuid4()) + '.jpg'
-
+                print(self.relevances[r].name)
                 cv2.imwrite(filepath, img)
                 #filepaths.append(filepath)
 

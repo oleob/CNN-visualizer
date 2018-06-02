@@ -13,10 +13,11 @@ import SettingsDrawer from '../components/SettingsDrawer';
 const HomeLink = props => <Link to="/" style={{ textDecoration: 'none' }} {...props}/>
 const PredictLink = props => <Link to="/predict" style={{ textDecoration: 'none' }} {...props}/>
 const VisualizeLink = props => <Link to="/visualize" style={{ textDecoration: 'none' }} {...props}/>
+const DeepDreamLink = props => <Link to="/deep_dream" style={{ textDecoration: 'none'}} {...props}/>
 const ActivationsLink = props => <Link to="/activations" style={{ textDecoration: 'none' }} {...props}/>
 const DeepTaylorLink = props => <Link to="/deep_taylor" style={{ textDecoration: 'none' }} {...props}/>
 
-const links = ['/', '/predict', '/visualize', '/activations', '/deep_taylor'];
+const links = ['/', '/predict', '/visualize', '/deep_dream', '/activations', '/deep_taylor'];
 
 const styles = {
   root: {
@@ -67,6 +68,7 @@ class Header extends Component {
                 <Tab label="Home" component={HomeLink} />
                 <Tab label="Predict" component={PredictLink} />
                 <Tab label="Visualize" component={VisualizeLink} />
+                <Tab label="Deep Dream" component={DeepDreamLink} />
                 <Tab label="Activations" component={ActivationsLink} />
                 <Tab label="Deep Taylor Decomposition" component={DeepTaylorLink} />
               </Tabs>

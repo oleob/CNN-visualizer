@@ -9,15 +9,22 @@ import numpy as np
 import utilities.feature_vis.misc as misc
 from preprocessing import vgg_preprocessing
 
+canonical_color_correlations = np.asarray([[0.26, 0.09, 0.02],
+                                           [0.27, 0.00, -0.05],
+                                           [0.27, -0.09, 0.03]]).astype("float32")
 
 def decorrelate_imagenet_colors(tensor):
-    color_correlations = np.asarray([[0.26, 0.09, 0.02],
-                                     [0.27, 0.00, -0.05],
-                                     [0.27, -0.09, 0.03]]).astype("float32")
     flat_rgb = tf.reshape(tensor, [-1, 3])
-    flat_rgb = tf.matmul(flat_rgb, color_correlations.T)
+    flat_rgb = tf.matmul(flat_rgb, canonical_color_correlations.T)
     tensor = tf.reshape(flat_rgb, tf.shape(tensor))
+    return tensor
 
+
+def correlate_imagenet_colors(tensor):
+    color_correlations_inv = np.linalg.inv(canonical_color_correlations)
+    flat_rgb = tf.reshape(tensor, [-1, 3])
+    flat_rgb = tf.matmul(flat_rgb, color_correlations_inv.T)
+    tensor = tf.reshape(flat_rgb, tf.shape(tensor))
     return tensor
 
 
@@ -36,7 +43,7 @@ def fourier_space(x_dim=200, y_dim=200):
         spectrum_var = tf.Variable(initial_values)
     spectrum = tf.complex(spectrum_var[0], spectrum_var[1])
 
-    # TODO: still some unclear fourier stuff below
+    # scale with the
     freq = np.sqrt(np.square(r_freq_bins) + np.square(c_freq_bins))
     # replace 0.0, so we can divide
     freq[freq == 0.0] = 1.0 / max(y_dim, x_dim)
@@ -48,21 +55,23 @@ def fourier_space(x_dim=200, y_dim=200):
     rgb = rgb[:3, :y_dim, :x_dim]
     rgb = tf.transpose(rgb, [1, 2, 0])
 
-    # decorrelate the colors
-    rgb = decorrelate_imagenet_colors(rgb)
-
-    # sigmoid the tensor
-    rgb = tf.nn.sigmoid(rgb[..., :3])
-
     return rgb
 
 
-def naive_space(x_dim=200, y_dim=200, dream_img=None):
+def naive_space(x_dim=200, y_dim=200, dream_img=None, decorrelate_colors=True):
 
-    rgb = misc.random_noise_img(x_dim, y_dim)
+    if dream_img is not None:
+        if decorrelate_colors:
+            dream_img = correlate_imagenet_colors(dream_img)
+        initial_values = tf.convert_to_tensor(dream_img)
+        initial_values = tf.expand_dims(initial_values, 0)
+        initial_values = tf.image.resize_bilinear(initial_values, [x_dim, y_dim])
+        initial_values = tf.squeeze(initial_values)
+    else:
+        initial_values = 0.01 * np.random.randn(x_dim, y_dim, 3).astype("float32")
 
     with tf.variable_scope("variable"):
-        rgb = tf.Variable(rgb, dtype='float32')
+        rgb = tf.Variable(initial_values)
 
     return rgb
 
@@ -88,9 +97,6 @@ def laplacian_pyramid_space(x_dim=200, y_dim=200, laplace_levels=4):
 
     # remove unnecessary batch dimension
     rgb = tf.squeeze(pyramid_tensor)
-
-    rgb = decorrelate_imagenet_colors(rgb)
-    rgb = tf.nn.sigmoid(rgb[..., :3])
 
     return rgb
 

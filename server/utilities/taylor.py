@@ -9,10 +9,10 @@ class Taylor:
         self.sess = sess
         self.epsilon = epsilon
         self.graph = sess.graph
-        img = cv2.imread('./static/images/dog-horse.jpg',1)
+        img = cv2.imread('./static/images/parrot2.jpeg',1)
         self.img = cv2.resize(img, (224,224))
         self.output_layer = sess.graph.get_tensor_by_name('output2:0')
-        self.new_output = tf.placeholder(tf.float32, self.output_layer.shape)
+        #self.new_output = tf.placeholder(tf.float32, self.output_layer.shape)
         self.labels = labels = open('./models/inception_labels.txt').read().split('\n')
 
     def __call__(self):
@@ -20,8 +20,8 @@ class Taylor:
         # get softmax_gradients
         #output_node = tf.slice(output_layer, [0, np.argmax(units)], [1, 1])
         #print(self.sess.run(output, feed_dict={"input:0":[self.img]})[0])
-        relevance = [self.new_output]
-        #relevance = [self.output_layer]
+        #relevance = [self.new_output]
+        relevance = [self.output_layer]
         layer = self.output_layer.op.inputs[0]
         while not (layer.op.name=='input'):
             with tf.variable_scope(layer.op.name + '_taylor'):
@@ -46,6 +46,7 @@ class Taylor:
                     #print(layer.op.name, activation.op.name)
                     layer = activation
                 elif 'maxpool' in layer.op.name:
+                    print(layer.op)
                     activation = self.get_parent(layer, 1)
                     relevance.append(self.backprop_max_pool(activation, relevance[-1]))
                     print(layer.op.name, activation.op.name)
@@ -95,14 +96,14 @@ class Taylor:
         z = tf.matmul(activation, w_pos) + self.epsilon
         s = relevance / z
         c = tf.matmul(s, tf.transpose(w_pos))
-        return [c * activation]
+        return [activation * c]
 
     def backprop_max_pool(self, activation, relevance, ksize=[1, 3, 3, 1], strides=[1, 2, 2, 1]):
-        z = tf.nn.max_pool(activation, ksize, strides, padding='SAME') + self.epsilon
-        #z = nn_ops.avg_pool(activation, ksize, strides, padding='SAME') + self.epsilon
+        #z = tf.nn.max_pool(activation, ksize, strides, padding='SAME') + self.epsilon
+        z = nn_ops.avg_pool(activation, ksize, strides, padding='SAME') + self.epsilon
         s = relevance / z
-        #c = gen_nn_ops._avg_pool_grad(tf.shape(activation), s, ksize, strides, padding='SAME')
-        c = gen_nn_ops.max_pool_grad_v2(activation, z, s, ksize, strides, padding='SAME')
+        c = gen_nn_ops._avg_pool_grad(tf.shape(activation), s, ksize, strides, padding='SAME')
+        #c = gen_nn_ops.max_pool_grad_v2(activation, z, s, ksize, strides, padding='SAME')
         return activation * c
 
     def backprop_inception_max_pool(self, activation, name, relevance, ksize=[1, 3, 3, 1], strides=[1, 1, 1, 1]):
@@ -117,13 +118,13 @@ class Taylor:
         s = new_relevance / z
         c = gen_nn_ops.max_pool_grad_v2(activation2, z, s, ksize, strides, padding='SAME')
         #c = gen_nn_ops._avg_pool_grad(tf.shape(activation2), s, ksize, strides, padding='SAME')
-        return c * activation2
+        return activation2 * c
 
     def backprop_avg_pool(self, activation, relevance, ksize=[1, 7, 7, 1], strides=[1, 1, 1, 1]):
         z = tf.nn.avg_pool(activation, ksize, strides, padding='VALID') + self.epsilon
         s = relevance / z
         c = gen_nn_ops._avg_pool_grad(tf.shape(activation), s, ksize, strides, padding='VALID')
-        return c * activation
+        return activation * c
 
     def backprop_conv(self, activation, weights, relevance, strides=[1, 1, 1, 1], padding='SAME'):
         w_pos = tf.maximum(0., weights)
@@ -189,22 +190,32 @@ class Taylor:
             print(sorted_labels[i])
         output_values[sorted_labels[0][2]] = 1
 
-        result = self.sess.run(relevance, feed_dict={"input:0":[self.img], self.new_output: [output_values]})
+        #result = self.sess.run(relevance, feed_dict={"input:0":[self.img], self.new_output: [output_values]})
+        result = self.sess.run(relevance, feed_dict={"input:0":[self.img]})
         for r in range(len(result)):
             res = result[r]
-            if(len(res.shape) >= 4):
-                print(r, relevance[r].op.name, res.shape)
+            if(len(res.shape) >= 4 and res.shape[1] > 1):
                 res = res[0,:,:,:]
-                #res = res[:,:,0] + res[:,:,1] + res[:,:,2]
-                res = np.sum(res, axis=2)
-                acti = res
-                acti /= acti.max()
-                fig = plt.figure()
-                ax = fig.add_subplot(111)
-                ax.axis('off')
-                ax.imshow(acti, cmap='Reds', interpolation='nearest')
+                print(r, relevance[r].op.name, res.shape)
+                float_img = np.sum(res, axis=2)
+                float_img /= float_img.max()
+                float_img *= 255
+                img = cv2.resize(float_img, (224, 224), interpolation=0).astype(np.uint8)
+                img = cv2.applyColorMap(img, cv2.COLORMAP_JET)
 
-                fig.savefig('static/images/temp/{0}.jpg'.format(r))
+                filepath = 'static/images/temp/{0}.jpg'.format(r)
+                cv2.imwrite(filepath, img)
+                # #print(r, relevance[r].op.name, res.shape)
+                # #res = res[0,:,:,:]
+                # res = res[:,:,0] + res[:,:,1] + res[:,:,2]
+                # acti = res
+                # acti /= acti.max()
+                # fig = plt.figure()
+                # ax = fig.add_subplot(111)
+                # ax.axis('off')
+                # ax.imshow(acti, cmap='Reds', interpolation='nearest')
+                #
+                # fig.savefig('static/images/temp/{0}_alt.jpg'.format(r))
             else:
                 print('-', relevance[r].op.name, res[0])
             # acti = cv2.resize(acti, (224,224), interpolation=0)

@@ -7,6 +7,7 @@ import {Route, Switch} from 'react-router-dom';
 import Home from './subContainers/Home';
 import Predict from './subContainers/Predict';
 import Visualize from './subContainers/Visualize';
+import DeepDream from './subContainers/DeepDream'
 import Activations from './subContainers/Activations';
 import DeepTaylor from './subContainers/DeepTaylor';
 
@@ -20,6 +21,9 @@ class Content extends Component {
 
     },
     visualize: {
+
+    },
+    deepDream:{
 
     },
     activations: {
@@ -65,6 +69,14 @@ class Content extends Component {
           updateGlobalState={this.props.updateGlobalState}
           globalState={this.props.globalState}
           localState={this.state.visualize} />)}
+        />
+        <Route path="/deep_dream"
+        render={() => (<DeepDream
+          name="visualize"
+          updateState={this.updateState}
+          updateGlobalState={this.props.updateGlobalState}
+          globalState={this.props.globalState}
+          localState={this.state.deepDream} />)}
         />
         <Route path="/activations"
         render={() => (<Activations
