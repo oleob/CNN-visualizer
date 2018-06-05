@@ -249,6 +249,13 @@ def current_settings():
     settings['network_name'] = network_name
     return json.dumps(settings)
 
+@app.route('/all_activations', methods=['GET'])
+def all_activations():
+    init_pred_net()
+    layers = json.loads(toast())['layers']
+    pred_net.get_all_activations(uploaded_image, layers, 10)
+    return('Done')
+
 @app.route('/layer_info', methods=['GET'])
 def toast():
     init_pred_net()
@@ -301,6 +308,9 @@ def toast():
             info['strides'] = str(op.get_attr('strides'))
             info['shape'] = str(tf.get_default_graph().get_tensor_by_name(op.name + ':0').shape)
             layer['info'] = info
+            increment = 1
+        else:
+            layer = {}
             increment = 1
         return layer, increment
     children = []

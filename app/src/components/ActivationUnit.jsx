@@ -7,7 +7,7 @@ const styles = {
     margin: 2,
   },
   image: {
-    width: 50,
+    width: 100,
   },
 }
 
@@ -16,7 +16,7 @@ const ActivationUnit = props => {
   return(
     <Paper className={classes.unit}>
       <img className={classes.image} alt="activation" src={props.image_path}/>
-
+      <p>Filter ID: {props.id}</p>
     </Paper>
   )
 }
