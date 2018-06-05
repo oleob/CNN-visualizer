@@ -64,11 +64,11 @@ def init_network(network_name, network_type, param_space='fourier', x_dim=-1, y_
             # preprocess for vgg_16
             lower, upper = (0, 255)
             input_graph = lower + input_layer * (upper - lower)
-            channels = tf.split(axis=2, num_or_size_splits=3, value=input_graph)
-            channels[0] -= 123.68 # R_MEAN
-            channels[1] -= 116.78 # G_MEAN
-            channels[2] -= 103.94 # B_MEAN
-            input_graph = tf.concat(axis=2, values=channels)
+            # channels = tf.split(axis=2, num_or_size_splits=3, value=input_graph)
+            # channels[0] -= 123.68 # R_MEAN
+            # channels[1] -= 116.78 # G_MEAN
+            # channels[2] -= 103.94 # B_MEAN
+            # input_graph = tf.concat(axis=2, values=channels)
         input_graph = tf.expand_dims(input_graph, 0)
     else:
         raise Exception('Unkown network type: ' + network_type)

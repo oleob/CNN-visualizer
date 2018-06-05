@@ -81,11 +81,11 @@ def predict_multiple():
                 paths.append(path)
                 image = cv2.imread(path, 1)
                 images.append(image)
-    print("..loading complete")
+    print("..loading complete,", len(images), "loaded")
     start_time = time.time()
     batch_size = 1000
     # TODO: fix timeout bug
-    num_batches = int(50000/batch_size)
+    num_batches = int(len(images)/batch_size)
     results = []
     for i in range(num_batches):
         batch = images[i * batch_size:(i + 1) * batch_size]
@@ -160,7 +160,7 @@ def visualize():
     if scale == 0:
         scales = None
     else:
-        lower_scale, upper_scale = 1.0 - scale, 1.0 + scale
+        lower_scale, upper_scale = max(0.1, 1.0 - scale), 1.0 + scale
         scales = np.arange(lower_scale, upper_scale, 0.01, dtype='float32')
 
     param_space = json.loads(request.data)['param_space']

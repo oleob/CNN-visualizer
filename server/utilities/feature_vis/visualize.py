@@ -114,7 +114,10 @@ def create_loss(opt, graph):
         channel = opt[1]
 
         layer_tensor = graph.get_tensor_by_name(layer_name)
-        loss = tf.reduce_mean(layer_tensor[:, :, :, channel])
+        # TODO: implement L2 loss?
+        # image_tensor = graph.get_tensor_by_name("image:0")-0.5
+        # l2 = tf.square(image_tensor)
+        loss = tf.reduce_mean(layer_tensor[:, :, :, channel])  #-50*l2
 
     # create loss which is a mix of different optimization-objectives
     elif isinstance(opt, list):

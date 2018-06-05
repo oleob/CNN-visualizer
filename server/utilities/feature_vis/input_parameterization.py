@@ -38,6 +38,7 @@ def fourier_space(x_dim=200, y_dim=200):
     c_freq_bins = np.fft.fftfreq(x_dim)[:c_freq]
 
     # initialize the space with random values
+    #np.random.seed(123456789)
     initial_values = 0.01 * np.random.randn(2, 3, r_freq, c_freq).astype("float32")
     with tf.variable_scope("variable"):
         spectrum_var = tf.Variable(initial_values)

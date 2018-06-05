@@ -122,11 +122,11 @@ class FeatureVis extends Component {
     });
 
     if (value === 'naive') {
-      this.setState({lr: 3.0})
+      this.setState({lr: 0.2})
     } else if (value === 'fourier') {
       this.setState({lr: 3.0})
     } else if (value === 'laplacian') {
-      this.setState({lr: 0.1})
+      this.setState({lr: 0.05})
     }
   };
 
