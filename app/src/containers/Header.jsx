@@ -64,12 +64,12 @@ class Header extends Component {
               <IconButton color="inherit" aria-label="Menu">
                 <MenuIcon onClick={this.toggleDrawer}/>
               </IconButton>
-              <Tabs className={classes.tabs} value={this.state.pageIndex} onChange={this.handleChange} indicatorColor="secondary" textColor="secondary" centered>
+              <Tabs className={classes.tabs} value={this.state.pageIndex} onChange={this.handleChange} indicatorColor="secondary" centered>
                 <Tab label="Home" component={HomeLink} />
-                <Tab label="Predict" component={PredictLink} />
-                <Tab label="Visualize" component={VisualizeLink} />
+                <Tab label="Predict class" component={PredictLink} />
+                <Tab label="Visualize Features" component={VisualizeLink} />
                 <Tab label="Deep Dream" component={DeepDreamLink} />
-                <Tab label="Activations" component={ActivationsLink} />
+                <Tab label="Visualize Activations" component={ActivationsLink} />
                 <Tab label="Deep Taylor Decomposition" component={DeepTaylorLink} />
               </Tabs>
             </Toolbar>

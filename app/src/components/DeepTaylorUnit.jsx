@@ -62,9 +62,6 @@ class DeepTaylorUnit extends Component {
         title="relevance"
       />
       <CardContent>
-        <Typography gutterBottom variant="headline" component="h2">
-          name here
-        </Typography>
         <Typography component="p">
           {this.props.name}
         </Typography>

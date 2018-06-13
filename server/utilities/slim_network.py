@@ -52,7 +52,7 @@ class Network:
             index = sorted_inds[i]
 
             item = {}
-            item['name'] = self.imagenet_labels[index + shift]
+            item['name'] = str(index + shift) + ', ' + self.imagenet_labels[index + shift]
             item['value'] = round(float(probabilities[index]), 4)
             results.append(item)
         return results
