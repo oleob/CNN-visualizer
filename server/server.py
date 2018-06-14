@@ -6,7 +6,7 @@ import uuid
 import tensorflow as tf
 import os
 import time
-import operator
+import random
 from flask import Flask, render_template, request, make_response, Response
 from utilities.slim_network import Network, VisNetwork
 from utilities.cleaner import clear_temp_folder
@@ -69,42 +69,56 @@ def predict_multiple():
     layer_name = json.loads(request.data)['layer_name'] + ":0"
     channel = int(json.loads(request.data)['channel'])
 
-    images = []
+    image_patches = []
+    patch_dim = 64
+    patches_per_img = 30
     init_fn = init_network(network_name, 'predict_multiple')
     pred_net = Network(network_name, init_fn, False)
     paths = []
     print("loading imagenet..")
-    for subdir, dirs, files in os.walk('./static/valid_64x64'):
+    i = 0
+    for subdir, dirs, files in os.walk('./static/test'):
         for file in files:
-            if file.endswith('.png'):
+            if file.endswith('.JPEG'):
+                print(i)
+                i += 1
                 path = subdir + os.sep + file
-                paths.append(path)
                 image = cv2.imread(path, 1)
-                images.append(image)
-    print("..loading complete,", len(images), "loaded")
+                width, height = len(image), len(image[0])
+                for _ in range(patches_per_img):
+                    x_start = random.randint(0, width-patch_dim)
+                    x_end = x_start + patch_dim
+                    y_start = random.randint(0, height-patch_dim)
+                    y_end = y_start + patch_dim
+                    patch = image[x_start:x_end, y_start:y_end, :]
+                    image_patches.append(patch)
+
+    print("..loading complete,", len(image_patches), "loaded")
     start_time = time.time()
     batch_size = 1000
     # TODO: fix timeout bug
-    num_batches = int(len(images)/batch_size)
+    num_batches = int(len(image_patches) / batch_size)
     results = []
     for i in range(num_batches):
-        batch = images[i * batch_size:(i + 1) * batch_size]
+        batch = image_patches[i * batch_size:(i + 1) * batch_size]
         results = results + pred_net.predict_multiple(batch, layer_name, channel)
         print("batch", i, "/", num_batches, "complete")
-    path_value = dict(zip(paths, results))
-    path_value_sorted = sorted(path_value.items(), key=operator.itemgetter(1))
-    path_value_sorted.reverse()
-    paths = [item[0] for item in path_value_sorted][:10]
+
+    image_patches = image_patches[:len(results)]
+    patch_value = zip(image_patches, results)
+    patch_value_sorted = sorted(patch_value, key=lambda x: x[1])
+    patch_value_sorted.reverse()
+    patches = [item[0] for item in patch_value_sorted][:100]
+    activation_values = [item[1] for item in patch_value_sorted][:100]
     duration = time.time() - start_time
     print("prediction complete\ttime:", duration)
 
     # save the images (for testing purposes), until the timeout-bug is fixed
     import PIL.Image
-    i = 0
-    for path in paths:
-        i += 1
-        img = PIL.Image.open(path)
-        img.save('static/images/temp/' + 'tiny_img' + str(i) + '.jpg', "JPEG")
+    for i in range(len(patches)):
+        img = PIL.Image.fromarray(patches[i])
+        val = str(round(activation_values[i], 2))
+        img.save('static/images/temp/' + 'tiny_img' + str(i) + "_" + val + '.jpg', "JPEG")
 
     return json.dumps({'filepaths': paths})
 
